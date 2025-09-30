@@ -22,4 +22,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+// Breeze auth routes removed (moved to resources/breeze_backup). Manual auth will be implemented instead.
+
+require __DIR__.'/auth_manual.php';
