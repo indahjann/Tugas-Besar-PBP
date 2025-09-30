@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('isbn')->unique()->nullable();
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->boolean('is_active')->default(true);
+            
             $table->timestamps();
         });
     }

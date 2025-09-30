@@ -7,6 +7,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
 Route::get('/dashboard', function () {
     // Check if user is admin
     if (auth()->user()->role !== 'admin') {
