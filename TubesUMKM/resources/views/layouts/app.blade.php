@@ -35,7 +35,7 @@
             @endif
 
             <!-- Page Content -->
-            <main>
+            <main id="main-content">
                 @isset($slot)
                     {{ $slot }}
                 @else
@@ -43,6 +43,10 @@
                 @endisset
             </main>
         </div>
+        
+        <!-- Footer -->
+        @include('layouts.footer')
+        
         @stack('scripts')
     </body>
 </html>

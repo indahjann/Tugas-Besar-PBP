@@ -9,7 +9,6 @@
     @includeWhen(true, 'welcome.featured')
     @includeWhen(true, 'welcome.categories')
     @includeWhen(true, 'welcome.testimonials')
-    @includeWhen(true, 'welcome.footer')
 @endsection
 
 @push('scripts')

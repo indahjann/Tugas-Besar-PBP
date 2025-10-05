@@ -7,6 +7,22 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/books', function () {
+    return view('welcome'); // Temporary: use same view
+});
+
+Route::get('/categories', function () {
+    return view('welcome'); // Temporary: use same view
+});
+
+Route::get('/about', function () {
+    return view('welcome'); // Temporary: use same view
+});
+
+Route::get('/contact', function () {
+    return view('welcome'); // Temporary: use same view
+});
+
 
 Route::get('/dashboard', function () {
     // Check if user is admin

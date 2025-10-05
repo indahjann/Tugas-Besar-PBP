@@ -1,0 +1,289 @@
+/* Loading States CSS for BUKUKU */
+
+/* Page Loader */
+.page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.loader-spinner {
+    text-align: center;
+    color: #667eea;
+}
+
+.loader-spinner i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.loader-spinner span {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+/* Search Suggestions */
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 50;
+    margin-top: 0.5rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.search-suggestions.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.3s ease;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: #f9fafb;
+    color: #667eea;
+}
+
+.suggestion-item i {
+    color: #9ca3af;
+    font-size: 0.9rem;
+}
+
+/* Newsletter Messages */
+.newsletter-message {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    animation: slideIn 0.3s ease;
+}
+
+.newsletter-message-success {
+    background: rgba(72, 187, 120, 0.1);
+    border: 1px solid rgba(72, 187, 120, 0.3);
+    color: #2f855a;
+}
+
+.newsletter-message-error {
+    background: rgba(245, 101, 101, 0.1);
+    border: 1px solid rgba(245, 101, 101, 0.3);
+    color: #c53030;
+}
+
+.newsletter-message-info {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    color: #5a67d8;
+}
+
+/* Newsletter Input States */
+.newsletter-input.invalid {
+    border-color: #f56565;
+    background: rgba(245, 101, 101, 0.05);
+}
+
+.newsletter-input.invalid:focus {
+    border-color: #f56565;
+    box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+}
+
+/* Content Transitions */
+#main-content {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#main-content.loading {
+    opacity: 0.5;
+    transform: translateY(10px);
+    pointer-events: none;
+}
+
+/* Cart Sidebar (if needed) */
+.cart-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 400px;
+    background: white;
+    box-shadow: -5px 0 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+}
+
+.cart-sidebar.show {
+    transform: translateX(0);
+}
+
+.cart-sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.cart-sidebar-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mobile Search */
+.mobile-search {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #667eea;
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mobile-search.show {
+    display: block;
+}
+
+.mobile-search-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+}
+
+.mobile-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Skeleton Loading */
+.skeleton {
+    background: linear-gradient(90deg, #f3f4f6 25%, transparent 37%, #f3f4f6 63%);
+    background-size: 400% 100%;
+    animation: skeleton-loading 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0 50%;
+    }
+}
+
+.skeleton-text {
+    height: 1rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-text.wide {
+    width: 80%;
+}
+
+.skeleton-text.medium {
+    width: 60%;
+}
+
+.skeleton-text.short {
+    width: 40%;
+}
+
+/* Responsive Loading States */
+@media (max-width: 768px) {
+    .page-loader {
+        backdrop-filter: blur(3px);
+    }
+    
+    .loader-spinner i {
+        font-size: 1.5rem;
+    }
+    
+    .loader-spinner span {
+        font-size: 1rem;
+    }
+    
+    .cart-sidebar {
+        width: 100%;
+    }
+    
+    .search-suggestions {
+        max-height: 250px;
+    }
+}
