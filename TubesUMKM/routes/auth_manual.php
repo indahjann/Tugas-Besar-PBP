@@ -9,6 +9,8 @@ Route::middleware('guest')->group(function () {
 
     Route::get('login', [ManualAuthController::class, 'showLogin'])->name('login');
     Route::post('login', [ManualAuthController::class, 'login']);
+    Route::get('forgot-password', [ManualAuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::post('forgot-password', [ManualAuthController::class, 'sendForgotPasswordLink'])->name('password.email');
 });
 
 Route::middleware('auth')->group(function () {

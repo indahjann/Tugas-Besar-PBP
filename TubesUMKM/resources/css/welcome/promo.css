@@ -1,0 +1,5 @@
+/* Promo banner */
+.promo-banner { background: linear-gradient(135deg,#2c5aa0,#4a90e2); color:white; padding:30px 20px; text-align:center; }
+.promo-banner h2 { margin:0 0 8px 0; }
+.promo-banner p { margin:0 0 12px 0; }
+.promo-banner .btn { border-radius:6px; }

@@ -5,6 +5,3 @@
 @import "./welcome/footer.css";
 @import "./welcome/responsive.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;

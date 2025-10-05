@@ -1,0 +1,9 @@
+/* Responsive tweaks */
+@media (max-width:768px){
+  .carousel-item-custom{ flex:0 0 180px; }
+  .nav-btn{ width:40px; height:40px; font-size:16px; }
+  .nav-btn.prev{ left:-15px; }
+  .nav-btn.next{ right:-15px; }
+  .section-title{ font-size:2rem; }
+  .carousel-container-bg{ padding:20px 30px; }
+}
