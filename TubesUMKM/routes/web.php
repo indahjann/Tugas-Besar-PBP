@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -39,5 +40,9 @@ Route::middleware('auth')->group(function () {
 });
 
 // Breeze auth routes removed (moved to resources/breeze_backup). Manual auth will be implemented instead.
+
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+
+Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
 
 require __DIR__.'/auth_manual.php';
