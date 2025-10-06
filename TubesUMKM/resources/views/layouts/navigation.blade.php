@@ -9,11 +9,8 @@
 
             <!-- Navigation Links -->
             <div class="nav-links">
-                <a href="/" class="nav-link" data-ajax-link>Home</a>
-                <a href="/books" class="nav-link" data-ajax-link>Books</a>
-                <a href="/categories" class="nav-link" data-ajax-link>Categories</a>
-                <a href="/about" class="nav-link" data-ajax-link>About</a>
                 <a href="/contact" class="nav-link" data-ajax-link>Contact</a>
+                <a href="/categories" class="nav-link" data-ajax-link>Categories</a> 
             </div>
             <!-- Search Bar -->
             <div class="search-bar">

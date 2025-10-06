@@ -91,19 +91,15 @@ class BukukuNavbar {
         window.addEventListener('scroll', () => {
             const currentScroll = window.pageYOffset;
             
-            // Add/remove scrolled class
+            // Add/remove scrolled class for styling effects
             if (currentScroll > 50) {
                 this.navbar?.classList.add('scrolled');
             } else {
                 this.navbar?.classList.remove('scrolled');
             }
             
-            // Hide/show navbar on scroll (optional)
-            if (currentScroll > lastScroll && currentScroll > 100) {
-                this.navbar?.style.setProperty('transform', 'translateY(-100%)');
-            } else {
-                this.navbar?.style.setProperty('transform', 'translateY(0)');
-            }
+            // Keep navbar always visible - disable hide/show
+            // this.navbar?.style.setProperty('transform', 'translateY(0)');
             
             lastScroll = currentScroll;
         });

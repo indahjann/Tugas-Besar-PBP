@@ -2,8 +2,10 @@
 .bukuku-navbar {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
     transition: all 0.3s ease;
     width: 100%;
@@ -31,18 +33,30 @@ body > .min-h-screen > .bukuku-navbar:first-child {
 nav.bukuku-navbar {
     margin: 0 !important;
     padding: 0 !important;
-    position: sticky !important;
+    position: fixed !important;
     clear: both;
+    transform: translateY(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-/* Fix layout issues */
+/* Fix layout issues for fixed navbar */
+body {
+    padding-top: 4rem; /* Space for fixed navbar height (4rem) */
+}
+
 .min-h-screen {
     display: flex;
     flex-direction: column;
+    min-height: calc(100vh - 4rem); /* Adjust for navbar height */
 }
 
-#main-content {
+/* Main content spacing */
+#main-content,
+main#main-content {
     flex: 1;
+    padding-top: 1rem; /* Just visual spacing, body already has space */
+    margin-top: 0;
 }
 
 .bukuku-navbar.scrolled {

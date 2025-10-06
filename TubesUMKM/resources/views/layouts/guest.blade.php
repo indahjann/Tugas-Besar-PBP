@@ -14,16 +14,22 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
-            </div>
-
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
+    <body class="font-sans text-gray-900 antialiased m-0 p-0 h-screen overflow-hidden">
+        <div class="h-full flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-purple-100">
+            <div class="w-full max-w-md">
+                <!-- Logo -->
+                <div class="text-center mb-4">
+                    <a href="/" class="inline-flex items-center gap-2 group">
+                        <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            BUKUKU
+                        </span>
+                    </a>
+                </div>
+                
+                <!-- Form Card -->
+                <div class="bg-white shadow-lg rounded-xl border border-gray-100 p-6">
+                    {{ $slot }}
+                </div>
             </div>
         </div>
     </body>
