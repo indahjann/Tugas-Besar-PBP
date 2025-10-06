@@ -6,6 +6,8 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
+
+
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -13,11 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Seed categories first (referenced by books)
+        $this->call([
+            UserSeeder::class,
+            CategorySeeder::class,
+            BookSeeder::class,
+            CartSeeder::class,       // buat keranjang per user
+            CartItemSeeder::class,   // isi keranjang dengan buku
+            OrderSeeder::class,      // buat pesanan dasar
+            OrderItemSeeder::class,  // isi pesanan dan hitung total
         ]);
     }
 }

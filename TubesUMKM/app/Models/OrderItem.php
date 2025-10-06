@@ -12,8 +12,9 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'book_id',
-        'quantity',
-        'price',
+        'price', // harga satuan saat transaksi
+        'qty', // jumlah buku dalam pesanan
+        'subtotal', // price * qty
     ];
 
     // Relasi ke pesanan

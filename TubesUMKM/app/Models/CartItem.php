@@ -12,7 +12,7 @@ class CartItem extends Model
     protected $fillable = [
         'cart_id',
         'book_id',
-        'quantity',
+        'qty', // jumlah item dalam keranjang
     ];
 
     // Relasi ke keranjang

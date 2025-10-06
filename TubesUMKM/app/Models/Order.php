@@ -11,8 +11,9 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
-        'total_price',
+        'total', // total nilai pesanan
         'status',
+        'address_text', // alamat pengiriman
     ];
 
     // Relasi ke pengguna

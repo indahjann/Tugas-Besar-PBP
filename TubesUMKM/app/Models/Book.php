@@ -17,7 +17,7 @@ class Book extends Model
         'isbn',
         'category_id',
         'is_active',
-        'image',
+        'cover_image',
     ];
 
     // Relasi ke kategori
