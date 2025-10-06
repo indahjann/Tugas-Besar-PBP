@@ -8,11 +8,11 @@
                 <div class="custom-carousel" id="bookCarousel">
                     <div class="carousel-track" id="carouselTrack">
                         {{-- Loop books here (static for now) --}}
-                        @foreach($books ?? [] as $book)
+                        @foreach(($books ?? collect()) as $book)
                             <div class="carousel-item-custom">
                                 <div class="book-card book-card-modern">
                                     <div class="book-image-container">
-                                        <img src="{{ $book['cover'] ?? '#' }}" class="book-image" alt="{{ $book['title'] ?? 'Book' }}">
+                                        <img src="{{ $book->cover_url }}" class="book-image" alt="{{ $book->name }}">
                                         <div class="hover-overlay">
                                             <div class="hover-actions">
                                                 <button class="btn-buy-now">Buy Now</button>
@@ -24,11 +24,11 @@
                                         </div>
                                     </div>
                                     <div class="book-info">
-                                        <h6 class="book-title">{{ $book['title'] ?? 'Untitled' }}</h6>
-                                        <p class="book-author">{{ $book['author'] ?? '' }}</p>
-                                        <p class="book-format">{{ $book['format'] ?? '' }}</p>
+                                        <h6 class="book-title">{{ $book->name }}</h6>
+                                        <p class="book-author">{{ $book->author }}</p>
+                                        <p class="book-format">&nbsp;</p>
                                         <div class="price-section">
-                                            <p class="current-price">{{ $book['price'] ?? '' }}</p>
+                                            <p class="current-price">Rp {{ number_format($book->price,0,',','.') }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -43,4 +43,3 @@
         </div>
     </div>
 </section>
-<!-- duplicate removed -->

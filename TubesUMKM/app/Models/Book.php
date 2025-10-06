@@ -37,4 +37,17 @@ class Book extends Model
     {
         return $this->hasMany(CartItem::class);
     }
+
+    // Accessor: generate a usable cover image URL or fallback
+    public function getCoverUrlAttribute(): string
+    {
+        $cover = $this->cover_image;
+        if (!$cover) {
+            return asset('images/default-cover.png');
+        }
+        if (str_starts_with($cover, 'http://') || str_starts_with($cover, 'https://')) {
+            return $cover;
+        }
+        return asset('storage/' . ltrim($cover, '/'));
+    }
 }

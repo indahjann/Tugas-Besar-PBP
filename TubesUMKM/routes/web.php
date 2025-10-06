@@ -3,9 +3,16 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
+use App\Models\Book;
 
 Route::get('/', function () {
-    return view('welcome');
+    // Ambil beberapa buku aktif terbaru untuk ditampilkan di landing
+    $books = Book::where('is_active', true)
+        ->orderByDesc('created_at')
+        ->select('id','name','author','price','cover_image')
+        ->take(10)
+        ->get();
+    return view('welcome', compact('books'));
 });
 
 Route::get('/books', function () {

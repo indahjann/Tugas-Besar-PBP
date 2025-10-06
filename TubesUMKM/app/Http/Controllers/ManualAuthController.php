@@ -44,21 +44,6 @@ class ManualAuthController extends Controller
         return view('auth.login');
     }
 
-    // Show forgot password form
-    public function showForgotPassword()
-    {
-        return view('auth.forgot-password');
-    }
-
-    // Handle forgot password (stub) — just validate and pretend to send
-    public function sendForgotPasswordLink(Request $request)
-    {
-        $request->validate(['email' => 'required|email']);
-
-        // Here you would normally dispatch a real password reset email.
-        // For this manual stub, just redirect back with a status message.
-        return back()->with('status', 'If that email exists in our system, a password reset link has been sent.');
-    }
 
     // Proses login
     public function login(Request $request)

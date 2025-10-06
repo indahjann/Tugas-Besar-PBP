@@ -1,0 +1,6 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='400' height='600' viewBox='0 0 400 600'>
+  <rect width='400' height='600' fill='#1e293b'/>
+  <rect x='40' y='80' width='320' height='440' rx='8' fill='#334155' stroke='#475569' stroke-width='4'/>
+  <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#e2e8f0' font-family='Arial,sans-serif' font-size='32'>NO COVER</text>
+  <text x='50%' y='65%' dominant-baseline='middle' text-anchor='middle' fill='#94a3b8' font-family='Arial,sans-serif' font-size='18'>BUKUKU</text>
+</svg>

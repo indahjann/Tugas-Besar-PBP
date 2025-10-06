@@ -13,14 +13,18 @@
         @csrf
         
         <div class="mb-4">
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-            <input type="email" 
-                   id="email" 
-                   name="email" 
+            <label for="login" class="block text-sm font-medium text-gray-700 mb-2">Email atau Username</label>
+            <input 
+                   id="login" 
+                   name="login" 
+                   type="text"
                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                   placeholder="Enter your email"
-                   value="{{ old('email') }}"
+                   placeholder="Masukkan email atau username"
+                   value="{{ old('login') }}"
                    required>
+            @error('login')
+                <small class="text-red-600">{{ $message }}</small>
+            @enderror
         </div>
 
         <div class="mb-4">
