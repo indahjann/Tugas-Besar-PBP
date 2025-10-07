@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProductController;
 use App\Models\Book;
 
@@ -51,5 +52,14 @@ Route::middleware('auth')->group(function () {
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 
 Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
+
+Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+
+Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
+
+// Rute untuk Keranjang Belanja (dilindungi oleh middleware auth)
+Route::middleware('auth')->group(function () {
+    Route::post('/cart/add', [CartController::class, 'addItem'])->name('cart.add');
+});
 
 require __DIR__.'/auth_manual.php';
