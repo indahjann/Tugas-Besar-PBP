@@ -10,7 +10,26 @@
             <!-- Navigation Links -->
             <div class="nav-links">
                 <a href="/contact" class="nav-link" data-ajax-link>Contact</a>
-                <a href="/categories" class="nav-link" data-ajax-link>Categories</a> 
+                <div class="categories-dropdown">
+                    <a href="/categories" class="nav-link categories-trigger" data-ajax-link>
+                        Categories
+                        <i class="fas fa-chevron-down"></i>
+                    </a>
+                    <div class="categories-dropdown-menu">
+                        <a href="/categories" class="dropdown-item-cat">
+                            <i class="fas fa-th-large"></i> All Categories
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        @php
+                            $categories = App\Models\Category::orderBy('name')->get();
+                        @endphp
+                        @foreach($categories as $category)
+                            <a href="/categories?category={{ $category->id }}" class="dropdown-item-cat">
+                                <i class="fas fa-bookmark"></i> {{ $category->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
             </div>
             <!-- Search Bar -->
             <div class="search-bar">

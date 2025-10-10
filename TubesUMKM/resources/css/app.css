@@ -2,12 +2,14 @@
 @import "./components/navbar.css";
 @import "./components/footer.css";
 @import "./components/loading.css";
+@import "./components/pagination.css";
 
 /* Page-specific Imports */
 @import "./welcome/promo.css";
 @import "./welcome/carousel.css";
 @import "./welcome/cards.css";
 @import "./welcome/responsive.css";
+@import "./categories.css";
 
 @tailwind base;
 @tailwind components;

@@ -128,7 +128,7 @@ class BookSeeder extends Seeder
                 'isbn' => '9780735211292',
                 'category_id' => 2,
                 'is_active' => true,
-                'cover_image' => 'https://picsum.photos/seed/atomichabits/400/600',
+                'cover_image' => 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1655988385i/40121378.jpg',
             ],
             [
                 'name' => 'Educated',

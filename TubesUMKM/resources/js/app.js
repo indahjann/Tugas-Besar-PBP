@@ -12,3 +12,4 @@ import './components/footer';
 
 // App-specific scripts
 import './carousel';
+import './categories';

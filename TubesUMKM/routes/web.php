@@ -4,32 +4,24 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProductController;
-use App\Models\Book;
+use App\Http\Controllers\BookController;
+use App\Http\Controllers\CategoriesController;
 
-Route::get('/', function () {
-    // Ambil beberapa buku aktif terbaru untuk ditampilkan di landing
-    $books = Book::where('is_active', true)
-        ->orderByDesc('created_at')
-        ->select('id','name','author','price','cover_image')
-        ->take(10)
-        ->get();
-    return view('welcome', compact('books'));
-});
+Route::get('/', [BookController::class, 'index'])->name('books.index');
 
 Route::get('/books', function () {
-    return view('welcome'); // Temporary: use same view
+    return view('welcome'); 
 });
 
-Route::get('/categories', function () {
-    return view('welcome'); // Temporary: use same view
-});
+Route::get('/categories', [CategoriesController::class, 'index'])->name('categories.index');
+Route::get('/categories/{category}', [CategoriesController::class, 'show'])->name('categories.show');
 
 Route::get('/about', function () {
-    return view('welcome'); // Temporary: use same view
+    return view('welcome'); 
 });
 
 Route::get('/contact', function () {
-    return view('welcome'); // Temporary: use same view
+    return view('welcome'); 
 });
 
 

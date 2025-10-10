@@ -8,11 +8,10 @@ use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
-    // Semua user bisa lihat katalog
     public function index()
     {
-        $books = Book::with('category')->where('is_active', true)->paginate(12);
-        return view('books.index', compact('books'));
+        $books = Book::where('is_active', true)->orderByDesc('created_at')->paginate(12);
+        return view('welcome', compact('books'));
     }
 
     // ADMIN: form tambah
