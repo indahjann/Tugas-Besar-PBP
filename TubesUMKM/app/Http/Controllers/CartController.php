@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AddItemToCartRequest;
+use App\Http\Requests\UpdateCartRequest;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -25,11 +26,19 @@ class CartController extends Controller
      */
     public function addItem(AddItemToCartRequest $request): JsonResponse
     {
+        $validatedData = $request->validated();
+        $userId = Auth::id();
+
+        // Pengecekan tambahan untuk memastikan user terotentikasi (Defensive Programming)
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
         try {
             $cartItem = $this->cartService->addItem(
-                Auth::id(),
-                $request->validated('product_id'),
-                $request->validated('quantity')
+                $userId,
+                $validatedData['product_id'],
+                $validatedData['quantity']
             );
 
             return response()->json([
@@ -43,7 +52,63 @@ class CartController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], 422); // Unprocessable Entity
+            ], 422);
+        }
+    }
+
+    /**
+     * Mengubah item di dalam keranjang.
+     *
+     * @param UpdateCartRequest $request
+     * @param int $cartItemId
+     * @return JsonResponse
+     */
+    public function updateItem(UpdateCartRequest $request, int $cartItemId): JsonResponse
+    {
+        try {
+            $validatedData = $request->validated();
+            $cartItem = $this->cartService->updateItem(
+                $cartItemId,
+                $validatedData['quantity']
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Jumlah produk berhasil diperbarui.',
+                'data' => $cartItem
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Gagal memperbarui item keranjang: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
+    }
+
+    /**
+     * Menghapus item dari keranjang.
+     * 
+     * @param int $cartItemId
+     * @return JsonResponse
+     */
+    public function removeItem(int $cartItemId): JsonResponse
+    {
+        try {
+            $this->cartService->removeItem($cartItemId);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Produk berhasil dihapus dari keranjang.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Gagal menghapus item keranjang: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus produk dari keranjang.'
+            ], 500);
         }
     }
 }
