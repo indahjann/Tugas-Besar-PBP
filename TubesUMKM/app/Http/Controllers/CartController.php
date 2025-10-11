@@ -89,11 +89,12 @@ class CartController extends Controller
 
     /**
      * Menghapus item dari keranjang.
-     * ... (Metode removeItem tidak perlu diubah karena tidak menggunakan $request->validated()) ...
+     * 
+     * @param int $cartItemId
+     * @return JsonResponse
      */
     public function removeItem(int $cartItemId): JsonResponse
     {
-        // ... (kode tetap sama)
         try {
             $this->cartService->removeItem($cartItemId);
 
