@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CategoriesController;
@@ -43,6 +44,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/add', [CartController::class, 'addItem'])->name('cart.add');
     Route::patch('/cart/update/{cartItemId}', [CartController::class, 'updateItem'])->name('cart.update');
     Route::delete('/cart/remove/{cartItemId}', [CartController::class, 'removeItem'])->name('cart.remove');
+
+    // Checkout
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 });
 
 // Breeze auth routes removed (moved to resources/breeze_backup). Manual auth will be implemented instead.
