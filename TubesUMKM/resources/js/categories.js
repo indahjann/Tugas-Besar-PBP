@@ -1,27 +1,7 @@
 // Categories Page JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    // View Toggle (Grid/List)
-    const viewButtons = document.querySelectorAll('.view-btn');
-    const booksContainer = document.getElementById('booksContainer');
-    
-    viewButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const view = this.dataset.view;
-            
-            // Update button states
-            viewButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Update container view
-            if (view === 'list') {
-                booksContainer.classList.add('books-list');
-                booksContainer.classList.remove('books-grid');
-            } else {
-                booksContainer.classList.add('books-grid');
-                booksContainer.classList.remove('books-list');
-            }
-        });
-    });
+    // Sort By Dropdown
+    setupSortDropdown();
     
     // Book Cards Interactions
     setupBookCardInteractions();
@@ -32,6 +12,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mobile Sidebar Toggle (for smaller screens)
     setupMobileSidebar();
 });
+
+function setupSortDropdown() {
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const currentUrl = new URL(window.location);
+            const sortValue = this.value;
+            
+            // Update URL parameter
+            currentUrl.searchParams.set('sort', sortValue);
+            
+            // Redirect to new URL with sort parameter
+            window.location.href = currentUrl.toString();
+        });
+    }
+}
 
 function setupBookCardInteractions() {
     // Add to Cart buttons

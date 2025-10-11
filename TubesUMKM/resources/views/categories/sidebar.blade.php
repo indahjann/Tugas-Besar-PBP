@@ -22,24 +22,4 @@
         </div>
     </div>
 
-    <!-- Filter Options -->
-    <div class="sidebar-section">
-        <h5 class="sidebar-title">
-            <i class="fas fa-filter"></i> Sort By
-        </h5>
-        <div class="filter-options">
-            <a href="#" class="filter-item active">
-                <i class="fas fa-sort-alpha-down"></i> Name A-Z
-            </a>
-            <a href="#" class="filter-item">
-                <i class="fas fa-sort-alpha-up"></i> Name Z-A
-            </a>
-            <a href="#" class="filter-item">
-                <i class="fas fa-dollar-sign"></i> Price Low to High
-            </a>
-            <a href="#" class="filter-item">
-                <i class="fas fa-dollar-sign"></i> Price High to Low
-            </a>
-        </div>
-    </div>
 </div>

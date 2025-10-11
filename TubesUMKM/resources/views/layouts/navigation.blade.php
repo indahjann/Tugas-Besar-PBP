@@ -10,12 +10,12 @@
             <!-- Navigation Links -->
             <div class="nav-links">
                 <a href="/contact" class="nav-link" data-ajax-link>Contact</a>
-                <div class="categories-dropdown">
-                    <a href="/categories" class="nav-link categories-trigger" data-ajax-link>
+                <div class="categories-dropdown" id="categoriesDropdown">
+                    <button type="button" class="nav-link categories-trigger" id="categoriesBtn">
                         Categories
                         <i class="fas fa-chevron-down"></i>
-                    </a>
-                    <div class="categories-dropdown-menu">
+                    </button>
+                    <div class="categories-dropdown-menu" id="categoriesMenu">
                         <a href="/categories" class="dropdown-item-cat">
                             <i class="fas fa-th-large"></i> All Categories
                         </a>

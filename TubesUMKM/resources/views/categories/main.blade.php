@@ -1,37 +1,27 @@
 <div class="categories-page">
     <div class="container-fluid">
-        <!-- Header Section -->
-        <div class="page-header">
+        <!-- Simple Header Section -->
+        <div class="simple-header">
             <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h1 class="page-title">
-                            @if($selectedCategory)
-                                {{ $selectedCategory->name }}
-                            @else
-                                All Categories
-                            @endif
-                        </h1>
-                        <p class="page-subtitle">
-                            @if($selectedCategory)
-                                Discover books in {{ $selectedCategory->name }} category
-                            @else
-                                Browse books by categories
-                            @endif
-                        </p>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <div class="breadcrumb-custom">
-                            <a href="/" class="breadcrumb-item">Home</a>
-                            <span class="breadcrumb-separator">/</span>
-                            <a href="/categories" class="breadcrumb-item">Categories</a>
-                            @if($selectedCategory)
-                                <span class="breadcrumb-separator">/</span>
-                                <span class="breadcrumb-current">{{ $selectedCategory->name }}</span>
-                            @endif
-                        </div>
-                    </div>
+                <!-- Breadcrumb -->
+                <div class="breadcrumb-simple">
+                    <a href="/" class="breadcrumb-item">Home</a>
+                    <span class="breadcrumb-separator">›</span>
+                    <a href="/categories" class="breadcrumb-item">Buku</a>
+                    @if($selectedCategory)
+                        <span class="breadcrumb-separator">›</span>
+                        <span class="breadcrumb-current">{{ $selectedCategory->name }}</span>
+                    @endif
                 </div>
+                
+                <!-- Page Title -->
+                <h1 class="simple-title">
+                    @if($selectedCategory)
+                        {{ $selectedCategory->name }}
+                    @else
+                        All Categories
+                    @endif
+                </h1>
             </div>
         </div>
 
@@ -44,7 +34,7 @@
                 <!-- Main Content -->
                 <div class="col-lg-9 col-md-8">
                     <div class="books-content">
-                        <!-- Results Info -->
+                        <!-- Results Info with Sort By -->
                         <div class="results-info">
                             <div class="results-count">
                                 Showing {{ $books->count() }} of {{ $books->total() }} books
@@ -53,13 +43,14 @@
                                 @endif
                             </div>
                             
-                            <div class="view-options">
-                                <button class="view-btn active" data-view="grid">
-                                    <i class="fas fa-th"></i>
-                                </button>
-                                <button class="view-btn" data-view="list">
-                                    <i class="fas fa-list"></i>
-                                </button>
+                            <div class="sort-dropdown">
+                                <select class="sort-select" id="sortSelect">
+                                    <option value="name_asc" {{ request('sort') == 'name_asc' ? 'selected' : '' }}>Name A-Z</option>
+                                    <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>Name Z-A</option>
+                                    <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Price: Low to High</option>
+                                    <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Price: High to Low</option>
+                                </select>
+                                <i class="fas fa-chevron-down sort-icon"></i>
                             </div>
                         </div>
 

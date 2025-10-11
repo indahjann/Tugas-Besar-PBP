@@ -13,6 +13,7 @@ class BukukuNavbar {
         this.mobileToggle = document.querySelector('.mobile-toggle');
         this.mobileMenu = document.querySelector('.mobile-menu');
         this.userDropdown = document.querySelector('.user-dropdown');
+        this.categoriesDropdown = document.querySelector('.categories-dropdown');
         this.searchInput = document.querySelector('.search-input');
         this.cartIcon = document.querySelector('.cart-icon');
         this.cartBadge = document.querySelector('.cart-badge');
@@ -31,6 +32,20 @@ class BukukuNavbar {
             });
         }
 
+        // Categories dropdown toggle
+        if (this.categoriesDropdown) {
+            const categoriesTrigger = this.categoriesDropdown.querySelector('.categories-trigger');
+            const categoriesMenu = this.categoriesDropdown.querySelector('.categories-dropdown-menu');
+            
+            if (categoriesTrigger && categoriesMenu) {
+                categoriesTrigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.toggleCategoriesDropdown();
+                });
+            }
+        }
+
         // User dropdown toggle
         if (this.userDropdown) {
             const userTrigger = this.userDropdown.querySelector('.user-trigger');
@@ -42,15 +57,18 @@ class BukukuNavbar {
                     e.stopPropagation();
                     this.toggleUserDropdown();
                 });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!this.userDropdown.contains(e.target)) {
-                        this.closeUserDropdown();
-                    }
-                });
             }
         }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (this.userDropdown && !this.userDropdown.contains(e.target)) {
+                this.closeUserDropdown();
+            }
+            if (this.categoriesDropdown && !this.categoriesDropdown.contains(e.target)) {
+                this.closeCategoriesDropdown();
+            }
+        });
 
         // Search functionality
         if (this.searchInput) {
@@ -268,9 +286,27 @@ class BukukuNavbar {
         }
     }
 
+    toggleCategoriesDropdown() {
+        if (this.categoriesDropdown) {
+            // Close other dropdowns first
+            this.closeUserDropdown();
+            
+            this.categoriesDropdown.classList.toggle('active');
+        }
+    }
+
+    closeCategoriesDropdown() {
+        if (this.categoriesDropdown) {
+            this.categoriesDropdown.classList.remove('active');
+        }
+    }
+
     toggleUserDropdown() {
         const dropdownMenu = this.userDropdown?.querySelector('.dropdown-menu');
         if (dropdownMenu) {
+            // Close other dropdowns first
+            this.closeCategoriesDropdown();
+            
             dropdownMenu.classList.toggle('show');
         }
     }
@@ -283,6 +319,7 @@ class BukukuNavbar {
     }
 
     closeAllDropdowns() {
+        this.closeCategoriesDropdown();
         this.closeUserDropdown();
         this.hideSearchSuggestions();
         
