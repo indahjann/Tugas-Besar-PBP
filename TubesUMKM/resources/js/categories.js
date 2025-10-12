@@ -31,58 +31,83 @@ function setupSortDropdown() {
 
 function setupBookCardInteractions() {
     // Add to Cart buttons
-    document.querySelectorAll('.btn-cart').forEach(btn => {
+    document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            const bookCard = this.closest('.book-card');
-            const bookTitle = bookCard.querySelector('.book-title').textContent;
-            
-            // Add loading state
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            
-            setTimeout(() => {
-                this.innerHTML = '<i class="fas fa-check"></i>';
-                showNotification(`"${bookTitle}" added to cart!`, 'success');
-                
-                setTimeout(() => {
-                    this.innerHTML = '<i class="fas fa-shopping-cart"></i>';
-                }, 1000);
-            }, 500);
+            // This will be handled by cart.js
         });
     });
     
-    // Wishlist buttons
-    document.querySelectorAll('.btn-wishlist').forEach(btn => {
+    // Favorites/Wishlist buttons
+    document.querySelectorAll('.btn-favorites').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            const icon = this.querySelector('i');
-            const bookCard = this.closest('.book-card');
-            const bookTitle = bookCard.querySelector('.book-title').textContent;
-            
-            if (icon.classList.contains('far')) {
+            toggleWishlist(this);
+        });
+    });
+}
+
+// Wishlist functionality
+function toggleWishlist(button) {
+    const bookId = button.getAttribute('data-book-id');
+    const bookCard = button.closest('.book-card');
+    const bookTitle = bookCard.querySelector('.book-title').textContent;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    if (!bookId) {
+        showNotification('Error: Book ID not found', 'error');
+        return;
+    }
+    
+    // Add loading state
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    button.disabled = true;
+    
+    fetch('/wishlist/toggle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            book_id: bookId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update button state
+            const icon = button.querySelector('i');
+            if (data.action === 'added') {
                 icon.classList.remove('far');
                 icon.classList.add('fas');
-                this.style.color = '#e74c3c';
-                showNotification(`"${bookTitle}" added to wishlist!`, 'success');
+                button.classList.add('active');
+                button.title = 'Remove from favorites';
+                showNotification(data.message, 'success');
             } else {
                 icon.classList.remove('fas');
                 icon.classList.add('far');
-                this.style.color = '';
-                showNotification(`"${bookTitle}" removed from wishlist!`, 'info');
+                button.classList.remove('active');
+                button.title = 'Add to favorites';
+                showNotification(data.message, 'info');
             }
-        });
-    });
-    
-    // Preview buttons
-    document.querySelectorAll('.btn-preview').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const bookCard = this.closest('.book-card');
-            const bookTitle = bookCard.querySelector('.book-title').textContent;
-            
-            // Simple modal simulation
-            showNotification(`Quick preview for "${bookTitle}" - Feature coming soon!`, 'info');
-        });
+        } else {
+            showNotification(data.message || 'Failed to update wishlist', 'error');
+            button.innerHTML = originalContent;
+        }
+    })
+    .catch(error => {
+        console.error('Wishlist error:', error);
+        showNotification('Failed to update wishlist', 'error');
+        button.innerHTML = originalContent;
+    })
+    .finally(() => {
+        if (button.innerHTML.includes('fa-spinner')) {
+            button.innerHTML = originalContent;
+        }
+        button.disabled = false;
     });
 }
 

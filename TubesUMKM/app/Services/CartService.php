@@ -39,13 +39,13 @@ class CartService
 
             if ($cartItem) {
                 // Jika sudah ada, update quantity
-                $cartItem->quantity += $quantity;
+                $cartItem->qty += $quantity;
                 $cartItem->save();
             } else {
                 // Jika belum ada, buat item baru
                 $cartItem = $cart->items()->create([
                     'book_id' => $product->id,
-                    'quantity' => $quantity,
+                    'qty' => $quantity,
                 ]);
             }
             
@@ -71,7 +71,7 @@ class CartService
             $cartItem = CartItem::findOrFail($cartItemId);
             $product = $cartItem->book; // Mengambil produk terkait
 
-            $quantityDifference = $newQuantity - $cartItem->quantity;
+            $quantityDifference = $newQuantity - $cartItem->qty;
 
             // Cek apakah stok mencukupi untuk penambahan kuantitas
             if ($quantityDifference > 0 && $product->stock < $quantityDifference) {
@@ -83,7 +83,7 @@ class CartService
             $product->save();
 
             // Update kuantitas item di keranjang
-            $cartItem->quantity = $newQuantity;
+            $cartItem->qty = $newQuantity;
             $cartItem->save();
             
             return $cartItem;
@@ -103,7 +103,7 @@ class CartService
             $product = $cartItem->book;
 
             // Kembalikan stok produk
-            $product->stock += $cartItem->quantity;
+            $product->stock += $cartItem->qty;
             $product->save();
 
             // Hapus item dari keranjang

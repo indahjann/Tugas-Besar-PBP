@@ -39,13 +39,13 @@
 
             <!-- User Actions -->
             <div class="user-actions">
-                <div class="cart-icon">
+                <a href="{{ route('cart.index') }}" class="cart-icon">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-badge">0</span>
-                </div>
+                </a>
 
                 @auth
-                    <div class="user-dropdown">
+                    <div class="user-dropdown" data-user-authenticated="true" data-user-name="{{ Auth::user()->name ?? Auth::user()->username }}">
                         <button class="user-trigger">
                             <div class="user-avatar">{{ substr(Auth::user()->name ?? Auth::user()->username ?? 'U', 0, 1) }}</div>
                             <span>{{ Auth::user()->name ?? Auth::user()->username ?? 'User' }}</span>
@@ -60,7 +60,7 @@
                                     <i class="fas fa-dashboard"></i> Dashboard
                                 </a>
                             @endif
-                            <a href="#" class="dropdown-item">
+                            <a href="{{ route('wishlist.index') }}" class="dropdown-item">
                                 <i class="fas fa-heart"></i> Wishlist
                             </a>
                             <a href="#" class="dropdown-item">
@@ -119,7 +119,7 @@
                         <i class="fas fa-dashboard"></i> Dashboard
                     </a>
                 @endif
-                <a href="#" class="mobile-nav-link">
+                <a href="{{ route('wishlist.index') }}" class="mobile-nav-link">
                     <i class="fas fa-heart"></i> Wishlist
                 </a>
                 <a href="#" class="mobile-nav-link">

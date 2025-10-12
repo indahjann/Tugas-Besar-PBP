@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AddItemToCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Services\CartService;
+use App\Models\Cart;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -16,6 +18,62 @@ class CartController extends Controller
     public function __construct(CartService $cartService)
     {
         $this->cartService = $cartService;
+    }
+
+    /**
+     * Menampilkan halaman keranjang belanja.
+     */
+    public function index()
+    {
+        $userId = Auth::id();
+        
+        if (!$userId) {
+            return redirect()->route('login');
+        }
+
+        $cart = Cart::where('user_id', $userId)
+                   ->with(['items.book.category'])
+                   ->first();
+
+        $cartItems = $cart ? $cart->items : collect();
+        
+        // Hitung total harga
+        $subtotal = $cartItems->sum(function ($item) {
+            return $item->book->price * $item->qty;
+        });
+
+        return view('cart', compact('cartItems', 'subtotal'));
+    }
+
+    /**
+     * Mendapatkan data keranjang untuk AJAX.
+     */
+    public function getCartData(): JsonResponse
+    {
+        $userId = Auth::id();
+        
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $cart = Cart::where('user_id', $userId)
+                   ->with(['items.book.category'])
+                   ->first();
+
+        $cartItems = $cart ? $cart->items : collect();
+        
+        $subtotal = $cartItems->sum(function ($item) {
+            return $item->book->price * $item->qty;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'items' => $cartItems,
+                'subtotal' => $subtotal,
+                'count' => $cartItems->sum('qty')
+            ]
+        ]);
     }
 
     /**
@@ -41,10 +99,15 @@ class CartController extends Controller
                 $validatedData['quantity']
             );
 
+            // Get updated cart count
+            $cart = Cart::where('user_id', $userId)->with('items')->first();
+            $cartCount = $cart ? $cart->items->sum('qty') : 0;
+
             return response()->json([
                 'success' => true,
                 'message' => 'Produk berhasil ditambahkan ke keranjang.',
-                'data' => $cartItem
+                'data' => $cartItem,
+                'cart_count' => $cartCount
             ], 201);
 
         } catch (\Exception $e) {

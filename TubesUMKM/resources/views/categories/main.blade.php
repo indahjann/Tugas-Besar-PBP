@@ -56,48 +56,9 @@
 
                         <!-- Books Grid -->
                         @if($books->count() > 0)
-                            <div class="books-grid" id="booksContainer">
+                            <div class="books-grid-modern" id="booksContainer">
                                 @foreach($books as $book)
-                                    <div class="book-card">
-                                        <div class="book-image-container">
-                                            <img src="{{ $book->cover_url }}" alt="{{ $book->name }}" class="book-image">
-                                            <div class="book-overlay">
-                                                <div class="book-actions">
-                                                    <button class="btn-action btn-cart" title="Add to Cart">
-                                                        <i class="fas fa-shopping-cart"></i>
-                                                    </button>
-                                                    <button class="btn-action btn-wishlist" title="Add to Wishlist">
-                                                        <i class="far fa-heart"></i>
-                                                    </button>
-                                                    <button class="btn-action btn-preview" title="Quick View">
-                                                        <i class="fas fa-eye"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            @if($book->category)
-                                                <span class="book-category-badge">{{ $book->category->name }}</span>
-                                            @endif
-                                        </div>
-                                        
-                                        <div class="book-info">
-                                            <h6 class="book-title">{{ $book->name }}</h6>
-                                            <p class="book-author">{{ $book->author }}</p>
-                                            <div class="book-rating">
-                                                <div class="stars">
-                                                    @for($i = 1; $i <= 5; $i++)
-                                                        <i class="fas fa-star {{ $i <= 4 ? 'filled' : '' }}"></i>
-                                                    @endfor
-                                                </div>
-                                                <span class="rating-count">(24)</span>
-                                            </div>
-                                            <div class="book-price">
-                                                <span class="current-price">Rp {{ number_format($book->price, 0, ',', '.') }}</span>
-                                                @if(rand(0,1))
-                                                    <span class="original-price">Rp {{ number_format($book->price * 1.2, 0, ',', '.') }}</span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <x-book-card :book="$book" :user-wishlist="$userWishlist ?? []" />
                                 @endforeach
                             </div>
 

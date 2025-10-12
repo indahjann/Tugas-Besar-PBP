@@ -9,7 +9,9 @@ Alpine.start();
 // Component scripts
 import './components/navbar';
 import './components/footer';
+import './components/book-card';
 
 // App-specific scripts
 import './carousel';
 import './categories';
+import './cart';

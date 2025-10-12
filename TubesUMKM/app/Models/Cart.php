@@ -18,6 +18,12 @@ class Cart extends Model
     {
         return $this->hasMany(CartItem::class);
     }
+    
+    // Alias untuk items 
+    public function items()
+    {
+        return $this->cartItems();
+    }
 
     // Relasi ke pengguna
     public function user()

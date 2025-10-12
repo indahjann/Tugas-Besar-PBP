@@ -4,14 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\Category;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BookController extends Controller
 {
     public function index()
     {
         $books = Book::where('is_active', true)->orderByDesc('created_at')->paginate(12);
-        return view('welcome', compact('books'));
+        
+        // Get user's wishlist for checking if books are already wishlisted
+        $userWishlist = [];
+        if (Auth::check()) {
+            $userWishlist = Wishlist::where('user_id', Auth::id())
+                                  ->pluck('book_id')
+                                  ->toArray();
+        }
+        
+        return view('welcome', compact('books', 'userWishlist'));
     }
 
     // ADMIN: form tambah

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Book;
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CategoriesController extends Controller
 {
@@ -35,11 +37,20 @@ class CategoriesController extends Controller
             ->limit(5)
             ->get();
         
+        // Get user's wishlist for checking if books are already wishlisted
+        $userWishlist = [];
+        if (Auth::check()) {
+            $userWishlist = Wishlist::where('user_id', Auth::id())
+                                  ->pluck('book_id')
+                                  ->toArray();
+        }
+        
         return view('categories', compact(
             'categories', 
             'books', 
             'selectedCategory', 
-            'popularCategories'
+            'popularCategories',
+            'userWishlist'
         ));
     }
     

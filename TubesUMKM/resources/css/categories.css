@@ -306,48 +306,76 @@
     transform: scale(1.05);
 }
 
-.book-overlay {
+/* Favorites Button (Modern style) */
+.btn-favorites {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.book-card:hover .book-overlay {
-    opacity: 1;
-}
-
-.book-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.btn-action {
-    width: 40px;
-    height: 40px;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 36px;
+    height: 36px;
     border: none;
     border-radius: 50%;
-    background: white;
-    color: #667eea;
+    background: rgba(255, 255, 255, 0.9);
+    color: #6b7280;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.875rem;
+    font-size: 1rem;
+    backdrop-filter: blur(4px);
+    z-index: 2;
 }
 
-.btn-action:hover {
-    background: #667eea;
-    color: white;
+.btn-favorites:hover {
+    background: white;
+    color: #dc2626;
     transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-favorites.active {
+    background: white;
+    color: #dc2626;
+}
+
+.btn-favorites.active i {
+    color: #dc2626;
+}
+
+/* Add to Cart Button */
+.btn-add-to-cart {
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    background: rgba(102, 126, 234, 0.95);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transform: translateY(10px);
+    backdrop-filter: blur(4px);
+}
+
+.book-card:hover .btn-add-to-cart {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.btn-add-to-cart:hover {
+    background: #5a67d8;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
 .book-category-badge {

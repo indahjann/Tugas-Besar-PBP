@@ -1,17 +1,83 @@
-document.addEventListener('DOMContentLoaded', function() {
+// Instance carousel global
+let carouselInstance = null;
+
+function initializeCarousel() {
   const carousel = document.getElementById('bookCarousel');
   const track = document.getElementById('carouselTrack');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
     
-  if (!carousel || !track || !prevBtn || !nextBtn) return;
+  if (!carousel || !track || !prevBtn || !nextBtn) {
+    return;
+  }
+  
+  // Cek apakah carousel sudah jalan
+  if (carouselInstance && 
+      carouselInstance.carousel === carousel && 
+      carouselInstance.autoSlideInterval) {
+    return;
+  }
+  
+  // Bersihkan instance lama kalau ada
+  if (carouselInstance) {
+    carouselInstance.destroy();
+  }
+  
+  // Buat instance carousel
+  carouselInstance = {
+    carousel,
+    track,
+    prevBtn,
+    nextBtn,
+    autoSlideInterval: null,
+    autoSlideResumeTimeout: null,
+    carouselHoverTimeout: null,
+    hoverTimeout: null,
+    resizeTimeout: null,
+    eventListeners: [],
+    
+    // Method untuk cleanup - ENHANCED
+    destroy() {
+      // Hapus semua timer
+      clearInterval(this.autoSlideInterval);
+      clearInterval(this.safetyCheck);
+      clearTimeout(this.autoSlideResumeTimeout);
+      clearTimeout(this.carouselHoverTimeout);
+      clearTimeout(this.hoverTimeout);
+      clearTimeout(this.resizeTimeout);
+      
+      // Reset flags
+      this.autoSlideInterval = null;
+      this.safetyCheck = null;
+      
+      // Hapus event listeners
+      this.eventListeners.forEach(({ element, event, handler }) => {
+        if (element && element.removeEventListener) {
+          element.removeEventListener(event, handler);
+        }
+      });
+      this.eventListeners = [];
+      
+      // Reset carousel state
+      if (this.track) {
+        this.track.style.transition = 'none';
+        this.track.style.transform = 'translateX(0)';
+      }
+    },
+    
+    // Helper untuk tracking event listeners
+    addEventListener(element, event, handler) {
+      element.addEventListener(event, handler);
+      this.eventListeners.push({ element, event, handler });
+    }
+  };
     
   const originalItems = Array.from(track.querySelectorAll('.carousel-item-custom'));
-  const itemWidth = 240; // 220px + 20px gap
+  const itemWidth = 240; // 220px + 20px jarak
   const totalItems = originalItems.length;
     
-  // Clone items for infinite loop
-  // Clone first few items and append to end
+  // Clone item untuk infinite loop
+  // Clone beberapa item pertama ke akhir
   const clonesToAppend = Math.min(4, totalItems);
   for (let i = 0; i < clonesToAppend; i++) {
     const clone = originalItems[i].cloneNode(true);
@@ -19,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
     track.appendChild(clone);
   }
     
-  // Clone last few items and prepend to beginning
+  // Clone beberapa item terakhir ke awal
   const clonesToPrepend = Math.min(4, totalItems);
   for (let i = clonesToPrepend - 1; i >= 0; i--) {
     const clone = originalItems[totalItems - 1 - i].cloneNode(true);
@@ -27,19 +93,18 @@ document.addEventListener('DOMContentLoaded', function() {
     track.insertBefore(clone, track.firstChild);
   }
     
-  // Update all items array to include clones
+  // Update array items termasuk clones
   const allItems = Array.from(track.querySelectorAll('.carousel-item-custom'));
   const startIndex = clonesToPrepend;
   let currentIndex = startIndex;
     
-  // Set initial position (start at first real item, after prepended clones)
+  // Set posisi awal (mulai dari item asli pertama)
   let currentTranslate = startIndex * itemWidth;
   track.style.transform = `translateX(-${currentTranslate}px)`;
     
-  let autoSlideInterval;
   let isTransitioning = false;
   let lastSlideTime = 0;
-  const slideThrottle = 1000; // Minimum 1 second between slides
+  const slideThrottle = 300; // 300ms biar lebih responsif
     
   function updateCarousel(animate = true) {
     if (animate) {
@@ -49,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     track.style.transform = `translateX(-${currentTranslate}px)`;
         
-    // Remove transition disable after a brief moment
+    // Aktifkan lagi transisi setelah sebentar
     if (!animate) {
       setTimeout(() => {
         track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
@@ -59,7 +124,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
   function nextSlide() {
     const now = Date.now();
-    if (isTransitioning || (now - lastSlideTime) < slideThrottle) return;
+    // Simple debounce to prevent rapid sliding
+    if (isTransitioning || (now - lastSlideTime) < slideThrottle) {
+      return;
+    }
         
     lastSlideTime = now;
     isTransitioning = true;
@@ -68,21 +136,24 @@ document.addEventListener('DOMContentLoaded', function() {
         
     updateCarousel(true);
         
-    // Check if we need to loop back
+    // Cek apakah perlu loop balik
     setTimeout(() => {
       if (currentIndex >= totalItems + startIndex) {
-        // We're at a clone at the end, jump back to real start
+        // Lagi di clone terakhir, balik ke awal
         currentIndex = startIndex;
         currentTranslate = startIndex * itemWidth;
         updateCarousel(false);
       }
       isTransitioning = false;
-    }, 600); // Match transition duration
+    }, 650); // Slightly longer than transition duration for safety
   }
     
   function prevSlide() {
     const now = Date.now();
-    if (isTransitioning || (now - lastSlideTime) < slideThrottle) return;
+    // Simple debounce to prevent rapid sliding
+    if (isTransitioning || (now - lastSlideTime) < slideThrottle) {
+      return;
+    }
         
     lastSlideTime = now;
     isTransitioning = true;
@@ -100,157 +171,247 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCarousel(false);
       }
       isTransitioning = false;
-    }, 600); // Match transition duration
+    }, 650); // Slightly longer than transition duration for safety
   }
     
   function startAutoSlide() {
-    autoSlideInterval = setInterval(nextSlide, 6000); // 6 detik
+    if (carouselInstance.autoSlideInterval) {
+      clearInterval(carouselInstance.autoSlideInterval);
+    }
+    carouselInstance.autoSlideInterval = setInterval(nextSlide, 6000);
   }
     
   function stopAutoSlide() {
-    clearInterval(autoSlideInterval);
+    if (carouselInstance.autoSlideInterval) {
+      clearInterval(carouselInstance.autoSlideInterval);
+      carouselInstance.autoSlideInterval = null;
+    }
   }
     
-  // Event listeners
-  nextBtn.addEventListener('click', function() {
+  // Event listeners with improved handling
+  function handleManualSlide(slideFunction) {
+    // Clear any pending auto-slide resume
+    clearTimeout(carouselInstance.autoSlideResumeTimeout);
+    
+    // Stop auto-slide immediately
     stopAutoSlide();
-    nextSlide();
-    setTimeout(startAutoSlide, 8000); // Resume after 8 seconds
-  });
     
-  prevBtn.addEventListener('click', function() {
-    stopAutoSlide();
-    prevSlide();
-    setTimeout(startAutoSlide, 8000); // Resume after 8 seconds
-  });
+    // Execute slide function
+    slideFunction();
     
-  // Pause auto-slide on carousel hover (as backup)
-  carousel.addEventListener('mouseenter', stopAutoSlide);
-  carousel.addEventListener('mouseleave', startAutoSlide);
-    
-  // Individual card hover pause with debounce
-  let hoverTimeout;
-  let cardsWithListeners = new Set();
-    
-  function setupCardHoverPause() {
-    const cards = document.querySelectorAll('.book-card-modern');
-        
-    cards.forEach(card => {
-      // Skip if this card already has listeners
-      if (cardsWithListeners.has(card)) return;
-            
-      cardsWithListeners.add(card);
-            
-      const mouseEnterHandler = function() {
-        clearTimeout(hoverTimeout);
-        stopAutoSlide();
-        // Add visual feedback
-        this.style.zIndex = '10';
-        this.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
-      };
-            
-      const mouseLeaveHandler = function() {
-        clearTimeout(hoverTimeout);
-        // Remove visual feedback
-        this.style.zIndex = '1';
-                
-        // Delay restart to prevent flickering when moving between cards
-        hoverTimeout = setTimeout(() => {
-          startAutoSlide();
-        }, 300);
-      };
-            
-      card.addEventListener('mouseenter', mouseEnterHandler);
-      card.addEventListener('mouseleave', mouseLeaveHandler);
-            
-      // Store handlers for potential cleanup
-      card._hoverHandlers = {
-        mouseenter: mouseEnterHandler,
-        mouseleave: mouseLeaveHandler
-      };
-    });
+    // Resume auto-slide after delay
+    carouselInstance.autoSlideResumeTimeout = setTimeout(() => {
+      startAutoSlide();
+    }, 8000);
   }
+  
+  const nextClickHandler = function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    handleManualSlide(nextSlide);
+  };
+  
+  const prevClickHandler = function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    handleManualSlide(prevSlide);
+  };
+  
+  carouselInstance.addEventListener(nextBtn, 'click', nextClickHandler);
+  carouselInstance.addEventListener(prevBtn, 'click', prevClickHandler);
+  
+  // Carousel container hover handling
+  const carouselMouseEnterHandler = function() {
+    clearTimeout(carouselInstance.hoverTimeout);
+    clearTimeout(carouselInstance.autoSlideResumeTimeout);
+    clearTimeout(carouselInstance.carouselHoverTimeout);
+    stopAutoSlide();
+  };
+  
+  const carouselMouseLeaveHandler = function() {
+    clearTimeout(carouselInstance.carouselHoverTimeout);
+    clearTimeout(carouselInstance.autoSlideResumeTimeout);
+    
+    // Delay restart to prevent conflicts
+    carouselInstance.carouselHoverTimeout = setTimeout(() => {
+      startAutoSlide();
+    }, 1000);
+  };
+  
+  // SIMPLE hover handling - HANYA pause auto-slide saat hover carousel
+  const simpleMouseEnterHandler = function() {
+    stopAutoSlide();
+  };
+  
+  const simpleMouseLeaveHandler = function() {
+    setTimeout(() => {
+      startAutoSlide();
+    }, 500);
+  };
+  
+  carouselInstance.addEventListener(carousel, 'mouseenter', simpleMouseEnterHandler);
+  carouselInstance.addEventListener(carousel, 'mouseleave', simpleMouseLeaveHandler);
     
   // Initialize
   updateCarousel(false);
   startAutoSlide();
     
-  // Setup hover pause for all cards (including clones)
-  setTimeout(() => {
-    setupCardHoverPause();
-  }, 100);
-    
   // Handle window resize
-  let resizeTimeout;
-  window.addEventListener('resize', function() {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(function() {
+  const resizeHandler = function() {
+    clearTimeout(carouselInstance.resizeTimeout);
+    carouselInstance.resizeTimeout = setTimeout(function() {
       // Recalculate position on resize
       currentTranslate = currentIndex * itemWidth;
       updateCarousel(false);
     }, 250);
-  });
-    
-  // Re-enable event handlers for cloned items
+  };
+  
+  carouselInstance.addEventListener(window, 'resize', resizeHandler);
+  
+  // Safety mechanism: periodically check if auto-slide is running
+  const safetyCheck = setInterval(() => {
+    if (carouselInstance && 
+        document.getElementById('bookCarousel') && 
+        !carouselInstance.autoSlideInterval && 
+        !isTransitioning) {
+      startAutoSlide();
+    }
+  }, 10000);
+  
+  // Store safety check for cleanup
+  carouselInstance.safetyCheck = safetyCheck;
+  
+  // Expose carousel instance globally for external control
+  window.carouselInstance = carouselInstance;
+}
+
+// Initialize carousel on DOM ready
+document.addEventListener('DOMContentLoaded', initializeCarousel);
+
+// Re-initialize carousel when returning to homepage or when DOM changes
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    // Page became visible, check if carousel needs reinitialization
+    setTimeout(() => {
+      const carousel = document.getElementById('bookCarousel');
+      // Only initialize if carousel exists and no working instance
+      if (carousel && 
+          (!carouselInstance || 
+           carouselInstance.carousel !== carousel ||
+           !carouselInstance.autoSlideInterval)) {
+        initializeCarousel();
+      }
+    }, 200);
+  }
+});
+
+// Listen for navigation events (for SPA-like navigation)
+window.addEventListener('popstate', function() {
   setTimeout(() => {
-    setupButtonHandlers();
-    setupCardHoverPause(); // Re-setup hover for cloned items too
+    const carousel = document.getElementById('bookCarousel');
+    if (carousel) {
+      initializeCarousel();
+    }
   }, 100);
 });
 
-// Button interaction handlers
-function setupButtonHandlers() {
-  // Buy Now buttons
-  document.querySelectorAll('.btn-buy-now').forEach(btn => {
-    // Remove existing listeners to avoid duplicates
-    btn.replaceWith(btn.cloneNode(true));
-  });
-    
-  document.querySelectorAll('.btn-buy-now').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      alert('Redirecting to checkout... (Demo)');
-    });
-  });
-    
-  // Add to Cart buttons
-  document.querySelectorAll('.btn-cart').forEach(btn => {
-    btn.replaceWith(btn.cloneNode(true));
-  });
-    
-  document.querySelectorAll('.btn-cart').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      const card = this.closest('.book-card-modern');
-      const title = card.querySelector('.book-title').textContent;
-      alert(`"${title}" added to cart! (Demo)`);
-    });
-  });
-    
-  // Favorite buttons
-  document.querySelectorAll('.btn-favorite').forEach(btn => {
-    btn.replaceWith(btn.cloneNode(true));
-  });
-    
-  document.querySelectorAll('.btn-favorite').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      const icon = this.querySelector('i');
-      if (icon.classList.contains('far')) {
-        icon.classList.remove('far');
-        icon.classList.add('fas');
-        this.style.color = '#e74c3c';
-      } else {
-        icon.classList.remove('fas');
-        icon.classList.add('far');
-        this.style.color = 'white';
+// Watch for DOM changes - OPTIMIZED to prevent favorites button lag
+if ('MutationObserver' in window) {
+  let mutationTimeout;
+  
+  const observer = new MutationObserver(function(mutations) {
+    // Filter mutations to only relevant ones
+    const relevantMutations = mutations.filter(mutation => {
+      // Ignore class changes to buttons (favorites toggle)
+      if (mutation.type === 'attributes' && 
+          mutation.attributeName === 'class' && 
+          (mutation.target.classList.contains('btn-favorites') ||
+           mutation.target.classList.contains('btn-add-to-cart'))) {
+        return false;
       }
+      
+      // Ignore mutations inside book cards (avoid carousel reinit on button clicks)
+      if (mutation.target.closest && 
+          (mutation.target.closest('.book-card-modern') ||
+           mutation.target.closest('.carousel-item-custom'))) {
+        return false;
+      }
+      
+      // Only care about significant structural changes
+      return mutation.type === 'childList' && 
+             mutation.addedNodes.length > 0 &&
+             Array.from(mutation.addedNodes).some(node => 
+               node.nodeType === 1 && // Element nodes only
+               (node.id === 'bookCarousel' || 
+                node.querySelector && node.querySelector('#bookCarousel'))
+             );
     });
+    
+    // Skip if no relevant mutations
+    if (relevantMutations.length === 0) {
+      return;
+    }
+    
+    // Debounce relevant mutations only
+    clearTimeout(mutationTimeout);
+    mutationTimeout = setTimeout(() => {
+      const carousel = document.getElementById('bookCarousel');
+      
+      // More strict reinitialization check
+      if (carousel && 
+          (!carouselInstance || 
+           carouselInstance.carousel !== carousel || 
+           !document.querySelector('#bookCarousel .carousel-track'))) {
+        initializeCarousel();
+      }
+    }, 300); // Longer debounce to prevent rapid reinitialization
+  });
+  
+  // More specific observation - avoid watching attributes that cause lag
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: false // Completely disable attribute watching
   });
 }
 
+// Global function to manually reinitialize carousel
+window.reinitializeCarousel = function() {
+  initializeCarousel();
+};
+
+// Event delegation for carousel buttons - OPTIMIZED
+let carouselEventsDelegated = false;
+
+function setupButtonHandlers() {
+  // Skip if already set up to prevent duplicates
+  if (carouselEventsDelegated) return;
+  
+  // Don't interfere with book-card.js event handling
+  // Just ensure carousel pauses during interactions
+  carouselEventsDelegated = true;
+}
+
+// Logo click handling only - button clicks handled by book-card.js
+document.addEventListener('click', function(e) {
+  // Check if it's a logo link click
+  const logoLink = e.target.closest('.logo-text, .logo-section a');
+  if (logoLink) {
+    // If we're already on home and carousel exists, don't reinitialize
+    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+      const carousel = document.getElementById('bookCarousel');
+      if (carousel && carouselInstance && carouselInstance.autoSlideInterval) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return false;
+      }
+    }
+  }
+}); // Use normal bubbling phase
+
+// Additional initialization for other page elements
 document.addEventListener('DOMContentLoaded', function() {
-  // Initial setup of button handlers
+  // Initial setup of button handlers for non-carousel elements
   setupButtonHandlers();
     
   // View More button

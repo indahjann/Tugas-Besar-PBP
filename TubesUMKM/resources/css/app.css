@@ -3,6 +3,7 @@
 @import "./components/footer.css";
 @import "./components/loading.css";
 @import "./components/pagination.css";
+@import "./components/book-card.css";
 
 /* Page-specific Imports */
 @import "./welcome/promo.css";
@@ -10,6 +11,7 @@
 @import "./welcome/cards.css";
 @import "./welcome/responsive.css";
 @import "./categories.css";
+@import "./cart.css";
 
 @tailwind base;
 @tailwind components;
