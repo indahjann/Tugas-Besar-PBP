@@ -25,6 +25,42 @@ class BookController extends Controller
         return view('welcome', compact('books', 'userWishlist'));
     }
 
+    /**
+     * Menampilkan page detail buku.
+     */
+    public function show(Book $book)
+    {
+        // Cek apakah buku aktif 
+        if (!$book->is_active) {
+            abort(404, 'Book not found or not available');
+        }
+
+        // Wishlist status untuk buku
+        $isWishlisted = false;
+        if (Auth::check()) {
+            $isWishlisted = Wishlist::where('user_id', Auth::id())
+                                  ->where('book_id', $book->id)
+                                  ->exists();
+        }
+
+        // Mengambil buku yang related
+        $relatedBooks = Book::where('category_id', $book->category_id)
+                           ->where('id', '!=', $book->id)
+                           ->where('is_active', true)
+                           ->limit(4)
+                           ->get();
+
+        // Mengambil wishlist user untuk buku relate
+        $userWishlist = [];
+        if (Auth::check()) {
+            $userWishlist = Wishlist::where('user_id', Auth::id())
+                                  ->pluck('book_id')
+                                  ->toArray();
+        }
+
+        return view('book', compact('book', 'isWishlisted', 'relatedBooks', 'userWishlist'));
+    }
+
     // ADMIN: form tambah
     public function create()
     {

@@ -50,4 +50,22 @@ class Book extends Model
         }
         return asset('storage/' . ltrim($cover, '/'));
     }
+
+    // Accessor: format price with currency
+    public function getFormattedPriceAttribute(): string
+    {
+        return 'Rp' . number_format($this->price, 0, ',', '.');
+    }
+
+    // Accessor: check if book is available
+    public function getIsAvailableAttribute(): bool
+    {
+        return $this->is_active && $this->stock > 0;
+    }
+
+    // Accessor: get short description
+    public function getShortDescriptionAttribute(): string
+    {
+        return $this->description ? \Illuminate\Support\Str::limit($this->description, 150) : 'Deskripsi tidak tersedia.';
+    }
 }

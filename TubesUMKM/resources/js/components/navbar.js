@@ -19,8 +19,8 @@ class BukukuNavbar {
         this.cartBadge = document.querySelector('.cart-badge');
         
         this.isSearchOpen = false;
-        this.cartCount = this.getCartCount();
-        this.updateCartBadge();
+        this.cartCount = 0;
+        this.loadCartCount(); // Load from API instead of localStorage
         // Hide suggestions immediately if the page was loaded with a search query
         try {
             const url = new URL(window.location.href);
@@ -475,10 +475,39 @@ class BukukuNavbar {
         }
     }
 
-    getCartCount() {
-        // Get cart count from localStorage, session, or API
-        const cartItems = JSON.parse(localStorage.getItem('cart') || '[]');
-        return cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
+    async loadCartCount() {
+        // Load cart count from API (authenticated users only)
+        const userDropdown = document.querySelector('[data-user-authenticated="true"]');
+        if (!userDropdown) {
+            this.cartCount = 0;
+            this.updateCartBadge();
+            return;
+        }
+        
+        try {
+            const response = await fetch('/cart/data', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                this.cartCount = data.data?.count || 0;
+                this.updateCartBadge();
+                
+                // Also update GlobalSync if available
+                if (window.GlobalSync && this.cartCount > 0) {
+                    window.GlobalSync.updateCartCounter(this.cartCount);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load cart count:', error);
+            this.cartCount = 0;
+            this.updateCartBadge();
+        }
     }
 
     updateCartBadge() {

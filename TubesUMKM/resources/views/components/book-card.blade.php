@@ -2,7 +2,9 @@
 
 <div class="book-card-modern">
     <div class="book-image-container">
-        <img src="{{ $book->cover_url }}" alt="{{ $book->name }}" class="book-image">
+        <a href="{{ route('books.show', $book) }}" class="book-link">
+            <img src="{{ $book->cover_url }}" alt="{{ $book->name }}" class="book-image">
+        </a>
         
         <!-- Favorites button (Modern style) - positioned in top right -->
         <button class="btn-favorites {{ in_array($book->id, $userWishlist) ? 'active' : '' }}" 
@@ -10,18 +12,12 @@
                 title="{{ in_array($book->id, $userWishlist) ? 'Remove from favorites' : 'Add to favorites' }}">
             <i class="{{ in_array($book->id, $userWishlist) ? 'fas' : 'far' }} fa-heart"></i>
         </button>
-        
-        <!-- Add to cart button (appears on hover) -->
-        <button class="btn-add-to-cart" 
-                data-book-id="{{ $book->id }}" 
-                title="Add to Cart">
-            <i class="fas fa-shopping-cart"></i>
-            Add to Cart
-        </button>
     </div>
     
     <div class="book-info">
-        <h6 class="book-title">{{ $book->name }}</h6>
+        <a href="{{ route('books.show', $book) }}" class="book-title-link">
+            <h6 class="book-title">{{ $book->name }}</h6>
+        </a>
         <p class="book-author">{{ $book->author }}</p>
         <div class="book-rating">
             <div class="stars">

@@ -15,3 +15,4 @@ import './components/book-card';
 import './carousel';
 import './categories';
 import './cart';
+import './book-detail';

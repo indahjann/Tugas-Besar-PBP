@@ -12,6 +12,7 @@
 @import "./welcome/responsive.css";
 @import "./categories.css";
 @import "./cart.css";
+@import "./book-detail.css";
 
 @tailwind base;
 @tailwind components;

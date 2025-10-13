@@ -58,6 +58,9 @@ Route::middleware('auth')->group(function () {
 
 // Breeze auth routes removed (moved to resources/breeze_backup). Manual auth will be implemented instead.
 
+// Book detail route (public access)
+Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
+
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 
 Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
