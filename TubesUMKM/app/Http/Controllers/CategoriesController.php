@@ -28,8 +28,28 @@ class CategoriesController extends Controller
             $booksQuery->where('category_id', $request->category);
         }
         
+        // Apply sort parameter
+        $sort = $request->input('sort');
+        switch ($sort) {
+            case 'name_asc':
+                $booksQuery->orderBy('name', 'asc');
+                break;
+            case 'name_desc':
+                $booksQuery->orderBy('name', 'desc');
+                break;
+            case 'price_asc':
+                $booksQuery->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $booksQuery->orderBy('price', 'desc');
+                break;
+            default:
+                $booksQuery->orderBy('name');
+                break;
+        }
+
         // Get books with pagination
-        $books = $booksQuery->orderBy('name')->paginate(12);
+        $books = $booksQuery->paginate(12);
         
         // Get popular categories (categories with most books)
         $popularCategories = Category::withCount('books')

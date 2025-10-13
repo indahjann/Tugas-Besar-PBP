@@ -55,7 +55,8 @@ class ManualAuthController extends Controller
 
         $login = $request->input('login');
         $password = $request->input('password');
-        $remember = $request->has('remember');
+    // Use boolean() to correctly interpret checkbox values like '1', 'on', 'true'
+    $remember = $request->boolean('remember');
 
         // Determine field type: email or username
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';

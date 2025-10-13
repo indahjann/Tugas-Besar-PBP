@@ -25,15 +25,24 @@
             </div>
         </div>
 
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-md-4">
-                    @includeWhen(true, 'Categories.sidebar')
-                </div>
+        <main id="main-content" class="main-content">
+            <div class="container">
+                <div class="row">
+                @php $showSidebar = $showSidebar ?? true; @endphp
 
-                <!-- Main Content -->
-                <div class="col-lg-9 col-md-8">
-                    <div class="books-content">
+                @if($showSidebar)
+                    <div class="col-lg-3 col-md-4">
+                        @includeWhen($showSidebar, 'Categories.sidebar')
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="col-lg-9 col-md-8">
+                        <div class="books-content">
+                @else
+                    <!-- Full width main content when sidebar is hidden (e.g., search results) -->
+                    <div class="col-12">
+                        <div class="books-content">
+                @endif
                         <!-- Results Info with Sort By -->
                         <div class="results-info">
                             <div class="results-count">
@@ -84,7 +93,8 @@
                         @endif
                     </div>
                 </div>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 </div>

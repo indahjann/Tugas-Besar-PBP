@@ -34,7 +34,7 @@
             <!-- Search Bar -->
             <div class="search-bar">
                 <i class="fas fa-search search-icon-input"></i>
-                <input type="text" class="search-input" placeholder="Search books, authors...">
+                <input type="text" class="search-input" placeholder="Search books, authors..." value="{{ request('q', '') }}" aria-label="Search books">
             </div>
 
             <!-- User Actions -->

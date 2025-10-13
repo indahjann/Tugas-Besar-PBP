@@ -1,0 +1,247 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="ak19gZIr0XKIWlNe1CkDANbJxF608xqN6WSsNolq">
+
+        <title>Laravel</title>
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+        <!-- Page-specific head (styles / links) -->
+            
+
+        <!-- Scripts -->
+        <script type="module" src="http://[::1]:5173/@vite/client"></script><link rel="stylesheet" href="http://[::1]:5173/resources/css/app.css" /><script type="module" src="http://[::1]:5173/resources/js/app.js"></script>
+        <!-- Temporary: include Bootstrap & Font Awesome from CDN so existing partials that use Bootstrap classes and font-awesome icons render correctly. Recommended: install via npm and import through Vite for production. -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    </head>
+    <body class="font-sans antialiased">
+        <div class="min-h-screen bg-gray-100">
+            <nav x-data="{ open: false }" class="bukuku-navbar">
+    <div class="navbar-container">
+        <div class="navbar-content">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                
+                <a href="/" class="logo-text" data-ajax-link>BUKUKU</a>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="nav-links">
+                <a href="/contact" class="nav-link" data-ajax-link>Contact</a>
+                <div class="categories-dropdown" id="categoriesDropdown">
+                    <button type="button" class="nav-link categories-trigger" id="categoriesBtn">
+                        Categories
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="categories-dropdown-menu" id="categoriesMenu">
+                        <a href="/categories" class="dropdown-item-cat">
+                            <i class="fas fa-th-large"></i> All Categories
+                        </a>
+                        <div class="dropdown-divider"></div>
+                                                                            <a href="/categories?category=3" class="dropdown-item-cat">
+                                <i class="fas fa-bookmark"></i> Comic &amp; Manga
+                            </a>
+                                                    <a href="/categories?category=1" class="dropdown-item-cat">
+                                <i class="fas fa-bookmark"></i> Fiction
+                            </a>
+                                                    <a href="/categories?category=2" class="dropdown-item-cat">
+                                <i class="fas fa-bookmark"></i> Non-Fiction
+                            </a>
+                                                    <a href="/categories?category=5" class="dropdown-item-cat">
+                                <i class="fas fa-bookmark"></i> Self-Help
+                            </a>
+                                                    <a href="/categories?category=6" class="dropdown-item-cat">
+                                <i class="fas fa-bookmark"></i> Technology
+                            </a>
+                                                    <a href="/categories?category=4" class="dropdown-item-cat">
+                                <i class="fas fa-bookmark"></i> Teen Reading
+                            </a>
+                                            </div>
+                </div>
+            </div>
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <i class="fas fa-search search-icon-input"></i>
+                <input type="text" class="search-input" placeholder="Search books, authors..." value="The Hobbit" aria-label="Search books">
+            </div>
+
+            <!-- User Actions -->
+            <div class="user-actions">
+                <a href="http://127.0.0.1:8000/cart" class="cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge">0</span>
+                </a>
+
+                                    <div class="auth-links">
+                                                    <a href="http://127.0.0.1:8000/login" class="auth-link">Login</a>
+                                                                            <a href="http://127.0.0.1:8000/register" class="auth-link primary">Register</a>
+                                            </div>
+                
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-toggle" @click="open = !open">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div :class="{'show': open}" class="mobile-menu">
+        <div class="mobile-nav-links">
+            <a href="/" class="mobile-nav-link" data-ajax-link>Home</a>
+            <a href="/books" class="mobile-nav-link" data-ajax-link>Books</a>
+            <a href="/categories" class="mobile-nav-link" data-ajax-link>Categories</a>
+            <a href="/about" class="mobile-nav-link" data-ajax-link>About</a>
+            <a href="/contact" class="mobile-nav-link" data-ajax-link>Contact</a>
+        </div>
+
+                    <div class="mobile-auth-section">
+                                    <a href="http://127.0.0.1:8000/login" class="mobile-auth-link">Login</a>
+                                                    <a href="http://127.0.0.1:8000/register" class="mobile-auth-link">Register</a>
+                            </div>
+            </div>
+</nav>
+
+            <!-- Page Heading -->
+            
+            <!-- Page Content -->
+            <main id="main-content">
+                                        <div class="categories-page">
+    <div class="container-fluid">
+        <!-- Simple Header Section -->
+        <div class="simple-header">
+            <div class="container">
+                <!-- Breadcrumb -->
+                <div class="breadcrumb-simple">
+                    <a href="/" class="breadcrumb-item">Home</a>
+                    <span class="breadcrumb-separator">›</span>
+                    <a href="/categories" class="breadcrumb-item">Buku</a>
+                                    </div>
+                
+                <!-- Page Title -->
+                <h1 class="simple-title">
+                                            All Categories
+                                    </h1>
+            </div>
+        </div>
+
+        <main id="main-content" class="main-content">
+            <div class="container">
+                <div class="row">
+                
+                                    <!-- Full width main content when sidebar is hidden (e.g., search results) -->
+                    <div class="col-12">
+                        <div class="books-content">
+                                        <!-- Results Info with Sort By -->
+                        <div class="results-info">
+                            <div class="results-count">
+                                Showing 1 of 1 books
+                                                            </div>
+                            
+                            <div class="sort-dropdown">
+                                <select class="sort-select" id="sortSelect">
+                                    <option value="name_asc" >Name A-Z</option>
+                                    <option value="name_desc" >Name Z-A</option>
+                                    <option value="price_asc" >Price: Low to High</option>
+                                    <option value="price_desc" >Price: High to Low</option>
+                                </select>
+                                <i class="fas fa-chevron-down sort-icon"></i>
+                            </div>
+                        </div>
+
+                        <!-- Books Grid -->
+                                                    <div class="books-grid-modern" id="booksContainer">
+                                                                    <div class="book-card-modern">
+    <div class="book-image-container">
+        <img src="https://picsum.photos/seed/thehobbit/400/600" alt="The Hobbit" class="book-image">
+        
+        <!-- Favorites button (Modern style) - positioned in top right -->
+        <button class="btn-favorites " 
+                data-book-id="5" 
+                title="Add to favorites">
+            <i class="far fa-heart"></i>
+        </button>
+        
+        <!-- Add to cart button (appears on hover) -->
+        <button class="btn-add-to-cart" 
+                data-book-id="5" 
+                title="Add to Cart">
+            <i class="fas fa-shopping-cart"></i>
+            Add to Cart
+        </button>
+    </div>
+    
+    <div class="book-info">
+        <h6 class="book-title">The Hobbit</h6>
+        <p class="book-author">J.R.R. Tolkien</p>
+        <div class="book-rating">
+            <div class="stars">
+                                    <i class="fas fa-star filled"></i>
+                                    <i class="fas fa-star filled"></i>
+                                    <i class="fas fa-star filled"></i>
+                                    <i class="fas fa-star filled"></i>
+                                    <i class="fas fa-star "></i>
+                            </div>
+            <span class="rating-count">(43)</span>
+        </div>
+        <div class="book-price">
+            <span class="current-price">Rp 110.000</span>
+                    </div>
+    </div>
+</div>                                                            </div>
+
+                            <!-- Pagination -->
+                            <div class="pagination-container">
+                                
+                            </div>
+                                            </div>
+                </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>                            </main>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="bukuku-footer">
+    <div class="footer-content">
+        <!-- Main Footer Content -->
+        <div class="footer-main">
+            <!-- Company Info -->
+            <div class="footer-company">
+                <div class="footer-logo">
+                    <div class="footer-logo-text">BUKUKU</div>
+                </div>
+                <div class="footer-description">
+                    Azka Indah Vino Dapa
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom">
+            <div class="footer-bottom-content">
+                <div class="footer-copyright">
+                    © 2025 BUKUKU - Premium Books Collection. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" title="Back to top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+</footer>
+        
+            
+    </body>
+</html>
+

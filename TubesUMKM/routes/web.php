@@ -62,4 +62,18 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 
 Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
 
+// General search endpoint (used by navbar and global search)
+Route::get('/search', [ProductController::class, 'search'])->name('search.global');
+Route::get('/search/suggestions', [ProductController::class, 'suggestions'])->name('search.suggestions');
+
 require __DIR__.'/auth_manual.php';
+
+// Temporary debug route to inspect remember-me behavior. Remove in production.
+use Illuminate\Support\Facades\Auth;
+Route::get('/check-remember', function () {
+    return response()->json([
+        'authenticated' => Auth::check(),
+        'via_remember' => Auth::viaRemember(),
+        'user_id' => Auth::id(),
+    ]);
+});

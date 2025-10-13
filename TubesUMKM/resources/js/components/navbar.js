@@ -21,6 +21,17 @@ class BukukuNavbar {
         this.isSearchOpen = false;
         this.cartCount = this.getCartCount();
         this.updateCartBadge();
+        // Hide suggestions immediately if the page was loaded with a search query
+        try {
+            const url = new URL(window.location.href);
+            if (url.searchParams.get('q')) {
+                this.hideSearchSuggestions();
+            }
+        } catch (e) {
+            // ignore
+        }
+        // Ensure we hide suggestions after AJAX content swaps
+        this.setupContentLoadedListener();
     }
 
     setupEventListeners() {
@@ -164,7 +175,11 @@ class BukukuNavbar {
             // Show loading state
             this.showLoadingState();
             
-            const response = await fetch(url + '?ajax=1', {
+            // Build the fetch URL safely so we don't accidentally create a malformed querystring
+            const fetchUrl = new URL(url, window.location.origin);
+            fetchUrl.searchParams.set('ajax', '1');
+
+            const response = await fetch(fetchUrl.toString(), {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -188,13 +203,24 @@ class BukukuNavbar {
             
             if (contentArea && newMainContent) {
                 contentArea.innerHTML = newMainContent.innerHTML;
+
+                this.hideSearchSuggestions();
                 
-                // Update browser history
-                window.history.pushState({ url, title }, title, url);
+                // Update browser history (store the real URL without the internal ajax flag)
+                try {
+                    const stateUrl = new URL(url, window.location.origin).toString();
+                    window.history.pushState({ url: stateUrl, title }, title, stateUrl);
+                } catch (e) {
+                    // Fallback: push relative url
+                    window.history.pushState({ url, title }, title, url);
+                }
                 document.title = title + ' - BUKUKU';
                 
                 // Reinitialize any JavaScript components in new content
                 this.reinitializeComponents();
+
+                // Sync search input from the resulting URL (so the search box keeps the query)
+                this.syncSearchInputFromUrl(url);
             } else {
                 // If we can't extract main content, fallback to normal navigation
                 throw new Error('Could not extract main content');
@@ -207,6 +233,16 @@ class BukukuNavbar {
             
             // Fallback to normal navigation
             window.location.href = url;
+        }
+    }
+
+    syncSearchInputFromUrl(url) {
+        try {
+            const parsed = new URL(url, window.location.origin);
+            const q = parsed.searchParams.get('q') || '';
+            if (this.searchInput) this.searchInput.value = q;
+        } catch (e) {
+            // ignore
         }
     }
 
@@ -264,10 +300,18 @@ class BukukuNavbar {
 
     reinitializeComponents() {
         // Reinitialize components that might be in the new content
+        this.hideSearchSuggestions();
         // This is where you'd reinitialize carousels, modals, etc.
         
         // Trigger custom event for other components
         window.dispatchEvent(new CustomEvent('contentLoaded'));
+    }
+
+    setupContentLoadedListener() {
+        window.addEventListener('contentLoaded', () => {
+            // After content is swapped in, ensure suggestions don't remain visible
+            this.hideSearchSuggestions();
+        });
     }
 
     toggleMobileMenu() {
@@ -331,23 +375,12 @@ class BukukuNavbar {
     async performSearch() {
         const query = this.searchInput?.value.trim();
         if (!query) return;
+        // Hide suggestions immediately on submit so they don't persist
+        this.hideSearchSuggestions();
 
-        try {
-            const response = await fetch(`/search?q=${encodeURIComponent(query)}`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                },
-            });
-
-            if (response.ok) {
-                const results = await response.json();
-                this.displaySearchResults(results);
-            }
-        } catch (error) {
-            console.error('Search error:', error);
-        }
+        // Use AJAX navigation to load the catalog view with search results
+        const url = `/search?q=${encodeURIComponent(query)}`;
+        this.loadPageContent(url, 'Search Results');
     }
 
     async fetchSearchSuggestions(query) {
@@ -399,9 +432,10 @@ class BukukuNavbar {
                     const value = e.currentTarget.dataset.value;
                     if (this.searchInput) {
                         this.searchInput.value = value;
+                        // Hide suggestions before triggering search to avoid flicker
+                        this.hideSearchSuggestions();
                         this.performSearch();
                     }
-                    this.hideSearchSuggestions();
                 });
             });
         } else {
@@ -427,6 +461,7 @@ class BukukuNavbar {
         // This would typically navigate to a search results page
         // or update the main content area with results
         this.loadPageContent(`/search?q=${encodeURIComponent(this.searchInput.value)}`, 'Search Results');
+        this.hideSearchSuggestions();
     }
 
     toggleCart() {
@@ -475,5 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('popstate', (e) => {
     if (e.state && e.state.url) {
         window.bukukuNavbar.loadPageContent(e.state.url, e.state.title);
+        // ensure search input is updated when navigating back/forward
+        window.bukukuNavbar.syncSearchInputFromUrl(e.state.url);
     }
 });
