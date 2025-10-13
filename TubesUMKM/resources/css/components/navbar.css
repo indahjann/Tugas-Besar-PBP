@@ -1,6 +1,6 @@
 /* Navigation Bar Styles for BUKUKU Bookstore */
 .bukuku-navbar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #15212B;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     position: fixed;
     top: 0;
@@ -60,7 +60,6 @@ main#main-content {
 }
 
 .bukuku-navbar.scrolled {
-    background: rgba(102, 126, 234, 0.95);
     backdrop-filter: blur(10px);
 }
 
@@ -131,7 +130,7 @@ main#main-content {
 }
 
 .nav-link:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 255, 255, 0.1);
     transform: translateY(-2px);
 }
 

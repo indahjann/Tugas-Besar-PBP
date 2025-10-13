@@ -8,7 +8,6 @@
     @includeWhen(true, 'welcome.promo')
     @includeWhen(true, 'welcome.featured')
     @includeWhen(true, 'welcome.categories')
-    @includeWhen(true, 'welcome.testimonials')
 @endsection
 
 @push('scripts')
