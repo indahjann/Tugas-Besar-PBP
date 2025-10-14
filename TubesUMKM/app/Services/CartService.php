@@ -15,22 +15,22 @@ class CartService
      *
      * @param int $userId
      * @param int $productId
-     * @param int $quantity
+     * @param int $qty
      * @return \App\Models\CartItem
      * @throws \Exception
      */
-    public function addItem(int $userId, int $productId, int $quantity)
+    public function addItem(int $userId, int $productId, int $qty)
     {
         $product = Book::findOrFail($productId);
         $user = User::findOrFail($userId);
 
         // Memastikan stok mencukupi
-        if ($product->stock < $quantity) {
+        if ($product->stock < $qty) {
             throw new \Exception('Stok produk tidak mencukupi.');
         }
 
         // Menggunakan transaksi database untuk menjaga konsistensi data
-        return DB::transaction(function () use ($user, $product, $quantity) {
+        return DB::transaction(function () use ($user, $product, $qty) {
             // Ambil atau buat keranjang baru untuk user
             $cart = $user->cart()->firstOrCreate([]);
 
@@ -38,19 +38,19 @@ class CartService
             $cartItem = $cart->items()->where('book_id', $product->id)->first();
 
             if ($cartItem) {
-                // Jika sudah ada, update quantity
-                $cartItem->qty += $quantity;
+                // Jika sudah ada, update qty
+                $cartItem->qty += $qty;
                 $cartItem->save();
             } else {
                 // Jika belum ada, buat item baru
                 $cartItem = $cart->items()->create([
                     'book_id' => $product->id,
-                    'qty' => $quantity,
+                    'qty' => $qty,
                 ]);
             }
             
             // Kurangi stok produk
-            $product->stock -= $quantity;
+            $product->stock -= $qty;
             $product->save();
 
             return $cartItem;
@@ -61,29 +61,29 @@ class CartService
      * Mengubah jumlah item di dalam keranjang.
      *
      * @param int $cartItemId
-     * @param int $newQuantity
+     * @param int $newQty
      * @return CartItem
      * @throws \Exception
      */
-    public function updateItem(int $cartItemId, int $newQuantity): CartItem
+    public function updateItem(int $cartItemId, int $newQty): CartItem
     {
-        return DB::transaction(function () use ($cartItemId, $newQuantity) {
+        return DB::transaction(function () use ($cartItemId, $newQty) {
             $cartItem = CartItem::findOrFail($cartItemId);
             $product = $cartItem->book; // Mengambil produk terkait
 
-            $quantityDifference = $newQuantity - $cartItem->qty;
+            $qtyDifference = $newQty - $cartItem->qty;
 
             // Cek apakah stok mencukupi untuk penambahan kuantitas
-            if ($quantityDifference > 0 && $product->stock < $quantityDifference) {
+            if ($qtyDifference > 0 && $product->stock < $qtyDifference) {
                 throw new \Exception('Stok produk tidak mencukupi.');
             }
 
             // Update stok produk
-            $product->stock -= $quantityDifference;
+            $product->stock -= $qtyDifference;
             $product->save();
 
             // Update kuantitas item di keranjang
-            $cartItem->qty = $newQuantity;
+            $cartItem->qty = $newQty;
             $cartItem->save();
             
             return $cartItem;

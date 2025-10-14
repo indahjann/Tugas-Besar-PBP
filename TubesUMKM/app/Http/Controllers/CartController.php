@@ -128,17 +128,34 @@ class CartController extends Controller
      */
     public function updateItem(UpdateCartRequest $request, int $cartItemId): JsonResponse
     {
+        $userId = Auth::id();
+
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
         try {
             $validatedData = $request->validated();
             $cartItem = $this->cartService->updateItem(
                 $cartItemId,
-                $validatedData['quantity']
+                $validatedData['quantity'],
+                $userId
             );
+
+            // Get updated cart data
+            $cart = Cart::where('user_id', $userId)->with('items')->first();
+            $cartCount = $cart ? $cart->items->sum('qty') : 0;
+
+            $subtotal = $cart->items->sum(function ($item) {
+                return $item->book->price * $item->qty;
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Jumlah produk berhasil diperbarui.',
-                'data' => $cartItem
+                'data' => $cartItem,
+                'cart_count' => $cartCount,
+                'subtotal' => $subtotal
             ]);
 
         } catch (\Exception $e) {
@@ -158,12 +175,23 @@ class CartController extends Controller
      */
     public function removeItem(int $cartItemId): JsonResponse
     {
+        $userId = Auth::id();
+
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
         try {
-            $this->cartService->removeItem($cartItemId);
+            $this->cartService->removeItem($cartItemId, $userId);
+
+            // Get update cart count
+            $cart = Cart::where('user_id', $userId)->with('items')->first();
+            $cartCount = $cart ? $cart->items->sum('qty') : 0;
 
             return response()->json([
                 'success' => true,
-                'message' => 'Produk berhasil dihapus dari keranjang.'
+                'message' => 'Produk berhasil dihapus dari keranjang.',
+                'cart_count' => $cartCount
             ], 200);
 
         } catch (\Exception $e) {

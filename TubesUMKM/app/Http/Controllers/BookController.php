@@ -27,11 +27,11 @@ class BookController extends Controller
         
         // Prepare small grouped lists for the homepage categories section
         // keys expected by the welcome partial: 'fiction', 'manga', 'teen'
-        // $categories = [
-        //     'fiction' => Book::where('is_active', true)->where('category_id', 1)->orderByDesc('created_at')->take(4)->get(),
-        //     'manga' => Book::where('is_active', true)->where('category_id', 3)->orderByDesc('created_at')->take(4)->get(),
-        //     'teen' => Book::where('is_active', true)->where('category_id', 4)->orderByDesc('created_at')->take(4)->get(),
-        // ];
+        $categories = [
+            'fiction' => Book::where('is_active', true)->where('category_id', 1)->orderByDesc('created_at')->take(4)->get(),
+            'manga' => Book::where('is_active', true)->where('category_id', 3)->orderByDesc('created_at')->take(4)->get(),
+            'teen' => Book::where('is_active', true)->where('category_id', 4)->orderByDesc('created_at')->take(4)->get(),
+        ];
 
         return view('welcome', compact('books', 'userWishlist', 'categories'));
     }

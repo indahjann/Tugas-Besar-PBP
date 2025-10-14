@@ -32,40 +32,46 @@ class CheckoutService
 
         return DB::transaction(function () use ($user, $cart, $orderDetails, $bookIds) {
             // 1. Kunci baris buku yang relevan untuk mencegah race condition
-            $books = Book::whereIn('id', $bookIds)->lockForUpdate()->get()->keyBy('id');
+            $books = Book::whereIn('id', $bookIds)->where('is_active', true)->lockForUpdate()->get()->keyBy('id');
 
             // 2. Validasi ulang stok di dalam transaksi yang aman
             foreach ($cart->items as $item) {
                 $book = $books->get($item->book_id);
-                if (!$book || $book->stock < $item->quantity) {
-                    throw new \Exception("Stok untuk produk '{$item->book->name}' tidak mencukupi.");
+
+                if (!book) {
+                    throw new \Exception("Buku '{$item->book->name}' sudah tidak tersedia.");
+                }
+
+                if ($book->stock < $item->qty) {
+                    throw new \Exception("Stok untuk produk '{$book->name}' tidak mencukupi. Stok tersedia: {$book->stock}");
                 }
             }
 
             // 3. Hitung total harga
             $totalPrice = $cart->items->sum(function ($item) use ($books) {
-                return $books->get($item->book_id)->price * $item->quantity;
+                return $books->get($item->book_id)->price * $item->qty;
             });
             
             // 4. Buat entri pesanan baru
             $order = $user->orders()->create([
                 'total' => $totalPrice,
                 'status' => 'pending',
-                'shipping_address' => $orderDetails['shipping_address'],
-                'phone_number' => $orderDetails['phone_number'],
+                'adress_text' => $orderDetails['adress_text']
             ]);
 
             // 5. Pindahkan item dan kurangi stok
             foreach ($cart->items as $item) {
                 $book = $books->get($item->book_id);
+                $subtotal = $book->price * $item->qty;
                 $order->items()->create([
                     'book_id' => $item->book_id,
-                    'quantity' => $item->quantity,
+                    'qty' => $item->qty,
                     'price' => $book->price, // Simpan harga saat ini
+                    'subtotal' => $subtotal
                 ]);
                 
                 // Kurangi stok
-                $book->stock -= $item->quantity;
+                $book->stock -= $item->qty;
                 $book->save();
             }
 
@@ -73,7 +79,7 @@ class CheckoutService
             $cart->items()->delete();
             
             // Muat relasi sebelum mengembalikan untuk efisiensi
-            return $order->load('items.book');
+            return $order->load('orderItems.book');
         });
     }
 }
