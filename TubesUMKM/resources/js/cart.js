@@ -58,6 +58,13 @@ class CartManager {
                 this.handleDeleteSelected();
             }
         });
+
+        // Checkout button
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('#checkout-btn')) {
+                this.handleCheckout();
+            }
+        });
     }
 
     async handleAddToCart(button) {
@@ -402,6 +409,19 @@ class CartManager {
             // Redirect to empty cart state or reload page
             location.reload();
         }
+    }
+
+    handleCheckout() {
+        // Check if there are items in cart
+        const cartItems = document.querySelectorAll('.cart-item');
+        
+        if (cartItems.length === 0) {
+            this.showNotification('Keranjang Anda kosong. Tambahkan produk terlebih dahulu.', 'warning');
+            return;
+        }
+
+        // Redirect to checkout page
+        window.location.href = '/checkout';
     }
 
     formatPrice(price) {

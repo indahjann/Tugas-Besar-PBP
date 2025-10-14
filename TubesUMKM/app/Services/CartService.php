@@ -49,11 +49,11 @@ class CartService
                 ]);
             }
             
-            // Kurangi stok produk
-            $product->stock -= $qty;
-            $product->save();
+            // // Kurangi stok produk
+            // $product->stock -= $qty;
+            // $product->save();
 
-            return $cartItem;
+            return $cartItem->fresh(['book']);
         });
     }
 
@@ -65,10 +65,16 @@ class CartService
      * @return CartItem
      * @throws \Exception
      */
-    public function updateItem(int $cartItemId, int $newQty): CartItem
+    public function updateItem(int $cartItemId, int $newQty, int $userId): CartItem
     {
         return DB::transaction(function () use ($cartItemId, $newQty) {
             $cartItem = CartItem::findOrFail($cartItemId);
+
+            // Validasi ownership
+            if ($cartItem->cart->user_id !== $userId) {
+                throw new \Exception('Unauthorized action.');
+            }
+
             $product = $cartItem->book; // Mengambil produk terkait
 
             $qtyDifference = $newQty - $cartItem->qty;
@@ -96,11 +102,16 @@ class CartService
      * @param int $cartItemId
      * @return void
      */
-    public function removeItem(int $cartItemId): void
+    public function removeItem(int $cartItemId, int $userId): void
     {
         DB::transaction(function () use ($cartItemId) {
             $cartItem = CartItem::findOrFail($cartItemId);
             $product = $cartItem->book;
+
+            // Validasi ownership
+            if ($cartItem->cart->user_id !== $userId) {
+                throw new \Exception('Unauthorized action.');
+            }
 
             // Kembalikan stok produk
             $product->stock += $cartItem->qty;

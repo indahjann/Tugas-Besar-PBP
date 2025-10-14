@@ -13,13 +13,8 @@ class AdminController extends Controller
 {
     public function __construct()
     {
-        // Pastikan hanya admin yang bisa akses
-        $this->middleware(function ($request, $next) {
-            if (!auth()->check() || auth()->user()->role !== 'admin') {
-                abort(403, 'Unauthorized action.');
-            }
-            return $next($request);
-        });
+        // Gunakan AdminMiddleware yang sudah ada
+        $this->middleware('admin');
     }
 
     /**

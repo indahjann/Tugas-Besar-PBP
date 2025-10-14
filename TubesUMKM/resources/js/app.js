@@ -16,3 +16,5 @@ import './carousel';
 import './categories';
 import './cart';
 import './book-detail';
+import './checkout';
+import './orders';

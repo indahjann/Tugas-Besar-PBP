@@ -13,6 +13,8 @@
 @import "./categories.css";
 @import "./cart.css";
 @import "./book-detail.css";
+@import "./checkout.css";
+@import "./orders.css";
 
 @tailwind base;
 @tailwind components;

@@ -7,23 +7,30 @@ use Illuminate\Foundation\Http\FormRequest;
 class StoreOrderRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Authorize user making the request. Only authenticated users can checkout.
      */
     public function authorize(): bool
     {
-        return true;
+        return auth()->check();
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * Validation rules for checkout payload.
      */
     public function rules(): array
     {
         return [
-            'shipping_address' => 'required|string|max:255',
-            'phone_number' => 'required|string|max:20',
+            'address_text' => 'required|string|max:1000',
+            'phone_number' => 'nullable|string|max:20',
+            'shipping_method' => 'nullable|string|in:standard,express',
+            'notes' => 'nullable|string|max:1000',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'address_text.required' => 'Alamat pengiriman harus diisi.',
         ];
     }
 }

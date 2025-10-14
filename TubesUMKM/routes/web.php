@@ -69,6 +69,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Checkout
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
     // Order Management (User)
