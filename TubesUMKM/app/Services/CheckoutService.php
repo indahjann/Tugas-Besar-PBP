@@ -38,7 +38,7 @@ class CheckoutService
             foreach ($cart->items as $item) {
                 $book = $books->get($item->book_id);
 
-                if (!book) {
+                if (!$book) {
                     throw new \Exception("Buku '{$item->book->name}' sudah tidak tersedia.");
                 }
 
@@ -55,8 +55,8 @@ class CheckoutService
             // 4. Buat entri pesanan baru
             $order = $user->orders()->create([
                 'total' => $totalPrice,
-                'status' => 'pending',
-                'adress_text' => $orderDetails['adress_text']
+                'status' => Order::STATUS_PENDING,
+                'address_text' => $orderDetails['address_text'] ?? ($orderDetails['adress_text'] ?? ''),
             ]);
 
             // 5. Pindahkan item dan kurangi stok

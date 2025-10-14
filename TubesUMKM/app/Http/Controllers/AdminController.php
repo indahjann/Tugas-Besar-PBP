@@ -31,7 +31,7 @@ class AdminController extends Controller
             'total_books' => Book::count(),
             'active_books' => Book::where('is_active', true)->count(),
             'total_orders' => Order::count(),
-            'pending_orders' => Order::where('status', 'pending')->count(),
+            'pending_orders' => Order::where('status', Order::STATUS_PENDING)->count(),
             'total_users' => User::where('role', 'user')->count(),
             'total_categories' => Category::count(),
         ];
@@ -192,8 +192,11 @@ class AdminController extends Controller
      */
     public function ordersUpdateStatus(Request $request, Order $order)
     {
+        // Build allowed status list from Order model to keep in sync with DB
+        $allowed = implode(',', array_keys(Order::getStatuses()));
+
         $validated = $request->validate([
-            'status' => 'required|in:pending,processing,shipped,completed,cancelled',
+            'status' => "required|in:$allowed",
         ]);
 
         $order->update($validated);

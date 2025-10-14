@@ -16,12 +16,19 @@ class Order extends Model
         'address_text',
     ];
 
-    // Status constants
+    // Status constants (values must match DB enum values in migrations)
+    // Primary (DB) values
     const STATUS_PENDING = 'pending';
-    const STATUS_PROCESSING = 'processing';
-    const STATUS_SHIPPED = 'shipped';
-    const STATUS_COMPLETED = 'completed';
-    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_DIPROSES = 'diproses';
+    const STATUS_DIKIRIM = 'dikirim';
+    const STATUS_SELESAI = 'selesai';
+    const STATUS_BATAL = 'batal';
+
+    // Aliases (English names) kept for backward compatibility in code
+    const STATUS_PROCESSING = self::STATUS_DIPROSES;
+    const STATUS_SHIPPED = self::STATUS_DIKIRIM;
+    const STATUS_COMPLETED = self::STATUS_SELESAI;
+    const STATUS_CANCELLED = self::STATUS_BATAL;
 
     /**
      * Get available statuses
@@ -29,11 +36,11 @@ class Order extends Model
     public static function getStatuses(): array
     {
         return [
-            self::STATUS_PENDING => 'Pending',
-            self::STATUS_PROCESSING => 'Diproses',
-            self::STATUS_SHIPPED => 'Dikirim',
-            self::STATUS_COMPLETED => 'Selesai',
-            self::STATUS_CANCELLED => 'Dibatalkan',
+            self::STATUS_PENDING => 'Menunggu',
+            self::STATUS_DIPROSES => 'Diproses',
+            self::STATUS_DIKIRIM => 'Dikirim',
+            self::STATUS_SELESAI => 'Selesai',
+            self::STATUS_BATAL => 'Dibatalkan',
         ];
     }
 
