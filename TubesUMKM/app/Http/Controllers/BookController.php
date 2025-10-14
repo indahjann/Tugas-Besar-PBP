@@ -12,7 +12,10 @@ class BookController extends Controller
 {
     public function index()
     {
-        $books = Book::where('is_active', true)->orderByDesc('created_at')->paginate(12);
+        $books = Book::where('is_active', true)
+                ->with('category')
+                ->orderByDesc('created_at')
+                ->paginate(12);
         
         // Get user's wishlist for checking if books are already wishlisted
         $userWishlist = [];
@@ -24,11 +27,11 @@ class BookController extends Controller
         
         // Prepare small grouped lists for the homepage categories section
         // keys expected by the welcome partial: 'fiction', 'manga', 'teen'
-        $categories = [
-            'fiction' => Book::where('is_active', true)->where('category_id', 1)->orderByDesc('created_at')->take(4)->get(),
-            'manga' => Book::where('is_active', true)->where('category_id', 3)->orderByDesc('created_at')->take(4)->get(),
-            'teen' => Book::where('is_active', true)->where('category_id', 4)->orderByDesc('created_at')->take(4)->get(),
-        ];
+        // $categories = [
+        //     'fiction' => Book::where('is_active', true)->where('category_id', 1)->orderByDesc('created_at')->take(4)->get(),
+        //     'manga' => Book::where('is_active', true)->where('category_id', 3)->orderByDesc('created_at')->take(4)->get(),
+        //     'teen' => Book::where('is_active', true)->where('category_id', 4)->orderByDesc('created_at')->take(4)->get(),
+        // ];
 
         return view('welcome', compact('books', 'userWishlist', 'categories'));
     }
@@ -67,64 +70,5 @@ class BookController extends Controller
         }
 
         return view('book', compact('book', 'isWishlisted', 'relatedBooks', 'userWishlist'));
-    }
-
-    // ADMIN: form tambah
-    public function create()
-    {
-        $categories = Category::all();
-        return view('admin.books.create', compact('categories'));
-    }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name'       => 'required|string|max:255',
-            'price'      => 'required|numeric',
-            'stock'      => 'required|integer',
-            'description'=> 'nullable|string',
-            'author'     => 'nullable|string|max:255',
-            'publisher'  => 'nullable|string|max:255',
-            'year'       => 'nullable|digits:4|integer',
-            'isbn'       => 'nullable|string|unique:books,isbn',
-            'category_id'=> 'required|exists:categories,id',
-            'is_active'  => 'boolean',
-        ]);
-
-        Book::create($data);
-
-        return redirect()->route('books.index')->with('success', 'Buku berhasil ditambahkan');
-    }
-
-    public function edit(Book $book)
-    {
-        $categories = Category::all();
-        return view('admin.books.edit', compact('book', 'categories'));
-    }
-
-    public function update(Request $request, Book $book)
-    {
-        $data = $request->validate([
-            'name'       => 'required|string|max:255',
-            'price'      => 'required|numeric',
-            'stock'      => 'required|integer',
-            'description'=> 'nullable|string',
-            'author'     => 'nullable|string|max:255',
-            'publisher'  => 'nullable|string|max:255',
-            'year'       => 'nullable|digits:4|integer',
-            'isbn'       => 'nullable|string|unique:books,isbn,' . $book->id,
-            'category_id'=> 'required|exists:categories,id',
-            'is_active'  => 'boolean',
-        ]);
-
-        $book->update($data);
-
-        return redirect()->route('books.index')->with('success', 'Buku berhasil diperbarui');
-    }
-
-    public function destroy(Book $book)
-    {
-        $book->delete();
-        return back()->with('success', 'Buku berhasil dihapus');
     }
 }

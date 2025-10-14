@@ -1,82 +1,141 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\AdminController;
+use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Public Routes (Guest & Authenticated)
+|--------------------------------------------------------------------------
+*/
+
+// Home page
 Route::get('/', [BookController::class, 'index'])->name('books.index');
 
-Route::get('/books', function () {
-    return view('welcome'); 
-});
-
+// Categories
 Route::get('/categories', [CategoriesController::class, 'index'])->name('categories.index');
-
 Route::get('/categories/{category}', [CategoriesController::class, 'show'])->name('categories.show');
 
+// Book detail (public access)
+Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
+
+// Search
+Route::get('/search', [ProductController::class, 'search'])->name('search.global');
+Route::get('/search/suggestions', [ProductController::class, 'suggestions'])->name('search.suggestions');
+
+// Static pages
 Route::get('/about', function () {
-    return view('welcome'); 
-});
+    return view('about'); 
+})->name('about');
 
 Route::get('/contact', function () {
-    return view('welcome'); 
-});
+    return view('contact'); 
+})->name('contact');
 
-Route::get('/dashboard', function () {
-    // Check if user is admin
-    if (auth()->user()->role !== 'admin') {
-        return redirect('/')->with('error', 'Access denied. Admin only.');
-    }
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| Authenticated User Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth')->group(function () {
-    // Profile
+    
+    // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Cart
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::get('/cart/data', [CartController::class, 'getCartData'])->name('cart.data');
-    Route::post('/cart/add', [CartController::class, 'addItem'])->name('cart.add');
-    Route::patch('/cart/update/{cartItemId}', [CartController::class, 'updateItem'])->name('cart.update');
-    Route::delete('/cart/remove/{cartItemId}', [CartController::class, 'removeItem'])->name('cart.remove');
+    // Cart Management
+    Route::prefix('cart')->name('cart.')->group(function () {
+        Route::get('/', [CartController::class, 'index'])->name('index');
+        Route::get('/data', [CartController::class, 'getCartData'])->name('data');
+        Route::post('/add', [CartController::class, 'addItem'])->name('add');
+        Route::patch('/update/{cartItemId}', [CartController::class, 'updateItem'])->name('update');
+        Route::delete('/remove/{cartItemId}', [CartController::class, 'removeItem'])->name('remove');
+    });
 
-    // Wishlist
-    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
-    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    // Wishlist Management
+    Route::prefix('wishlist')->name('wishlist.')->group(function () {
+        Route::get('/', [WishlistController::class, 'index'])->name('index');
+        Route::post('/toggle', [WishlistController::class, 'toggle'])->name('toggle');
+    });
 
     // Checkout
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
+    // Order Management (User)
+    Route::prefix('orders')->name('orders.')->group(function () {
+        Route::get('/', [OrderController::class, 'index'])->name('index');
+        Route::get('/{order}', [OrderController::class, 'show'])->name('show');
+        Route::post('/{order}/cancel', [OrderController::class, 'cancel'])->name('cancel');
+    });
 });
 
-// Breeze auth routes removed (moved to resources/breeze_backup). Manual auth will be implemented instead.
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
 
-// Book detail route (public access)
-Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show');
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // Dashboard
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
-Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    // Books Management
+    Route::prefix('books')->name('books.')->group(function () {
+        Route::get('/', [AdminController::class, 'booksIndex'])->name('index');
+        Route::get('/create', [AdminController::class, 'booksCreate'])->name('create');
+        Route::post('/', [AdminController::class, 'booksStore'])->name('store');
+        Route::get('/{book}/edit', [AdminController::class, 'booksEdit'])->name('edit');
+        Route::put('/{book}', [AdminController::class, 'booksUpdate'])->name('update');
+        Route::delete('/{book}', [AdminController::class, 'booksDestroy'])->name('destroy');
+    });
 
-Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
+    // Orders Management
+    Route::prefix('orders')->name('orders.')->group(function () {
+        Route::get('/', [AdminController::class, 'ordersIndex'])->name('index');
+        Route::get('/{order}', [AdminController::class, 'ordersShow'])->name('show');
+        Route::patch('/{order}/status', [AdminController::class, 'ordersUpdateStatus'])->name('update-status');
+    });
 
-// General search endpoint (used by navbar and global search)
-Route::get('/search', [ProductController::class, 'search'])->name('search.global');
-Route::get('/search/suggestions', [ProductController::class, 'suggestions'])->name('search.suggestions');
+    // Categories Management
+    Route::prefix('categories')->name('categories.')->group(function () {
+        Route::get('/', [AdminController::class, 'categoriesIndex'])->name('index');
+        Route::post('/', [AdminController::class, 'categoriesStore'])->name('store');
+        Route::put('/{category}', [AdminController::class, 'categoriesUpdate'])->name('update');
+        Route::delete('/{category}', [AdminController::class, 'categoriesDestroy'])->name('destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes
+|--------------------------------------------------------------------------
+*/
 
 require __DIR__.'/auth_manual.php';
 
-// Temporary debug route to inspect remember-me behavior. Remove in production.
-use Illuminate\Support\Facades\Auth;
+/*
+|--------------------------------------------------------------------------
+| Development/Debug Routes (Remove in production)
+|--------------------------------------------------------------------------
+*/
+
+// Check remember-me functionality
 Route::get('/check-remember', function () {
     return response()->json([
         'authenticated' => Auth::check(),
         'via_remember' => Auth::viaRemember(),
         'user_id' => Auth::id(),
+        'user_role' => Auth::user()?->role,
     ]);
-});
+})->middleware('web');
