@@ -48,6 +48,16 @@ Route::get('/contact', function () {
 
 Route::middleware('auth')->group(function () {
     
+    // Dashboard (User)
+    Route::get('/dashboard', function () {
+        // Redirect admin to admin dashboard
+        if (auth()->user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+        // User dashboard shows books homepage
+        return redirect()->route('books.index');
+    })->name('dashboard');
+    
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -86,7 +96,7 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Dashboard
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
@@ -101,11 +111,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::delete('/{book}', [AdminController::class, 'booksDestroy'])->name('destroy');
     });
 
-    // Orders Management
-    Route::prefix('orders')->name('orders.')->group(function () {
-        Route::get('/', [AdminController::class, 'ordersIndex'])->name('index');
-        Route::get('/{order}', [AdminController::class, 'ordersShow'])->name('show');
-        Route::patch('/{order}/status', [AdminController::class, 'ordersUpdateStatus'])->name('update-status');
+    // Orders Management (Admin)
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [AdminController::class, 'ordersIndex'])->name('orders.index');
+        Route::get('/{order}', [AdminController::class, 'ordersShow'])->name('orders.show');
+        Route::patch('/{order}/status', [AdminController::class, 'ordersUpdateStatus'])->name('orders.update-status');
     });
 
     // Categories Management

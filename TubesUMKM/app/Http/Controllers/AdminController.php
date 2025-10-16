@@ -11,32 +11,12 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
-    public function __construct()
-    {
-        // Gunakan AdminMiddleware yang sudah ada
-        $this->middleware('admin');
-    }
-
     /**
      * Dashboard admin
      */
     public function dashboard()
     {
-        $stats = [
-            'total_books' => Book::count(),
-            'active_books' => Book::where('is_active', true)->count(),
-            'total_orders' => Order::count(),
-            'pending_orders' => Order::where('status', Order::STATUS_PENDING)->count(),
-            'total_users' => User::where('role', 'user')->count(),
-            'total_categories' => Category::count(),
-        ];
-
-        $recentOrders = Order::with('user')
-            ->latest()
-            ->take(10)
-            ->get();
-
-        return view('admin.dashboard', compact('stats', 'recentOrders'));
+        return view('dashboard');
     }
 
     /**

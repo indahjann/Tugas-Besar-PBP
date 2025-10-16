@@ -7,172 +7,252 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    /**
+     * Check if index exists (compatible with MySQL and SQLite)
+     */
+    private function indexExists(string $table, string $indexName): bool
+    {
+        $connection = Schema::getConnection();
+        $driver = $connection->getDriverName();
+
+        if ($driver === 'sqlite') {
+            // SQLite: check via pragma
+            $indexes = $connection->select("PRAGMA index_list('{$table}')");
+            foreach ($indexes as $index) {
+                if ($index->name === $indexName) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            // MySQL/MariaDB: use SHOW INDEX
+            $indexes = $connection->select("SHOW INDEX FROM `{$table}` WHERE Key_name = ?", [$indexName]);
+            return !empty($indexes);
+        }
+    }
+
     public function up(): void
     {
         // Index untuk Books (buat hanya jika belum ada)
-        $booksCategoryIndex = DB::select("SHOW INDEX FROM `books` WHERE Key_name = ?", ['books_category_id_index']);
-        if (empty($booksCategoryIndex)) {
+        if (!$this->indexExists('books', 'books_category_id_index')) {
             Schema::table('books', function (Blueprint $table) {
                 $table->index('category_id');
             });
         }
 
-        $booksIsActiveIndex = DB::select("SHOW INDEX FROM `books` WHERE Key_name = ?", ['books_is_active_index']);
-        if (empty($booksIsActiveIndex)) {
+        if (!$this->indexExists('books', 'books_is_active_index')) {
             Schema::table('books', function (Blueprint $table) {
                 $table->index('is_active');
             });
         }
 
-        $booksComposite = DB::select("SHOW INDEX FROM `books` WHERE Key_name = ?", ['books_is_active_created_at_index']);
-        if (empty($booksComposite)) {
+        if (!$this->indexExists('books', 'books_is_active_created_at_index')) {
             Schema::table('books', function (Blueprint $table) {
                 $table->index(['is_active', 'created_at']); // Composite index untuk listing
             });
         }
 
-        $booksName = DB::select("SHOW INDEX FROM `books` WHERE Key_name = ?", ['books_name_index']);
-        if (empty($booksName)) {
+        if (!$this->indexExists('books', 'books_name_index')) {
             Schema::table('books', function (Blueprint $table) {
                 $table->index('name'); // Untuk search
             });
         }
 
         // Index untuk Cart Items
-        Schema::table('cart_items', function (Blueprint $table) {
-            $table->index('cart_id');
-            $table->index('book_id');
-        });
+        if (!$this->indexExists('cart_items', 'cart_items_cart_id_index')) {
+            Schema::table('cart_items', function (Blueprint $table) {
+                $table->index('cart_id');
+            });
+        }
+
+        if (!$this->indexExists('cart_items', 'cart_items_book_id_index')) {
+            Schema::table('cart_items', function (Blueprint $table) {
+                $table->index('book_id');
+            });
+        }
 
         // Create unique index for cart_items only if it doesn't exist already
-        $cartItemUnique = DB::select("SHOW INDEX FROM `cart_items` WHERE Key_name = ?", ['cart_items_cart_id_book_id_unique']);
-        if (empty($cartItemUnique)) {
+        if (!$this->indexExists('cart_items', 'cart_items_cart_id_book_id_unique')) {
             Schema::table('cart_items', function (Blueprint $table) {
                 $table->unique(['cart_id', 'book_id']); // Prevent duplicate items
             });
         }
 
         // Index untuk Orders
-        Schema::table('orders', function (Blueprint $table) {
-            $table->index('user_id');
-            $table->index('status');
-            $table->index(['user_id', 'created_at']); // Untuk user order history
-        });
+        if (!$this->indexExists('orders', 'orders_user_id_index')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->index('user_id');
+            });
+        }
+
+        if (!$this->indexExists('orders', 'orders_status_index')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->index('status');
+            });
+        }
+
+        if (!$this->indexExists('orders', 'orders_user_id_created_at_index')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->index(['user_id', 'created_at']); // Untuk user order history
+            });
+        }
 
         // Index untuk Order Items
-        Schema::table('order_items', function (Blueprint $table) {
-            $table->index('order_id');
-            $table->index('book_id');
-        });
+        if (!$this->indexExists('order_items', 'order_items_order_id_index')) {
+            Schema::table('order_items', function (Blueprint $table) {
+                $table->index('order_id');
+            });
+        }
+
+        if (!$this->indexExists('order_items', 'order_items_book_id_index')) {
+            Schema::table('order_items', function (Blueprint $table) {
+                $table->index('book_id');
+            });
+        }
 
         // Index untuk Carts
         // Create unique index for carts.user_id only if it doesn't exist
-        $cartsUnique = DB::select("SHOW INDEX FROM `carts` WHERE Key_name = ?", ['carts_user_id_unique']);
-        if (empty($cartsUnique)) {
+        if (!$this->indexExists('carts', 'carts_user_id_unique')) {
             Schema::table('carts', function (Blueprint $table) {
                 $table->unique('user_id'); // One cart per user
             });
         }
 
         // Index untuk Wishlist
-        Schema::table('wishlists', function (Blueprint $table) {
-            $table->index('user_id');
-            $table->index('book_id');
-        });
+        if (!$this->indexExists('wishlists', 'wishlists_user_id_index')) {
+            Schema::table('wishlists', function (Blueprint $table) {
+                $table->index('user_id');
+            });
+        }
+
+        if (!$this->indexExists('wishlists', 'wishlists_book_id_index')) {
+            Schema::table('wishlists', function (Blueprint $table) {
+                $table->index('book_id');
+            });
+        }
 
         // Create unique index for wishlists only if it doesn't exist already
-        $wishlistUnique = DB::select("SHOW INDEX FROM `wishlists` WHERE Key_name = ?", ['wishlists_user_id_book_id_unique']);
-        if (empty($wishlistUnique)) {
+        if (!$this->indexExists('wishlists', 'wishlists_user_id_book_id_unique')) {
             Schema::table('wishlists', function (Blueprint $table) {
                 $table->unique(['user_id', 'book_id']); // Prevent duplicate wishlist items
             });
         }
 
         // Index untuk Users
-        Schema::table('users', function (Blueprint $table) {
-            // Username dan email sudah unique by default
-            $table->index('role');
-        });
+        if (!$this->indexExists('users', 'users_role_index')) {
+            Schema::table('users', function (Blueprint $table) {
+                // Username dan email sudah unique by default
+                $table->index('role');
+            });
+        }
     }
 
     public function down(): void
     {
         // Drop indexes dari books jika ada
-        $booksCategoryIndex = DB::select("SHOW INDEX FROM `books` WHERE Key_name = ?", ['books_category_id_index']);
-        if (!empty($booksCategoryIndex)) {
+        if ($this->indexExists('books', 'books_category_id_index')) {
             Schema::table('books', function (Blueprint $table) {
                 $table->dropIndex(['category_id']);
             });
         }
 
-        $booksIsActiveIndex = DB::select("SHOW INDEX FROM `books` WHERE Key_name = ?", ['books_is_active_index']);
-        if (!empty($booksIsActiveIndex)) {
+        if ($this->indexExists('books', 'books_is_active_index')) {
             Schema::table('books', function (Blueprint $table) {
                 $table->dropIndex(['is_active']);
             });
         }
 
-        $booksComposite = DB::select("SHOW INDEX FROM `books` WHERE Key_name = ?", ['books_is_active_created_at_index']);
-        if (!empty($booksComposite)) {
+        if ($this->indexExists('books', 'books_is_active_created_at_index')) {
             Schema::table('books', function (Blueprint $table) {
                 $table->dropIndex(['is_active', 'created_at']);
             });
         }
 
-        $booksName = DB::select("SHOW INDEX FROM `books` WHERE Key_name = ?", ['books_name_index']);
-        if (!empty($booksName)) {
+        if ($this->indexExists('books', 'books_name_index')) {
             Schema::table('books', function (Blueprint $table) {
                 $table->dropIndex(['name']);
             });
         }
 
-        Schema::table('cart_items', function (Blueprint $table) {
-            $table->dropIndex(['cart_id']);
-            $table->dropIndex(['book_id']);
-        });
+        if ($this->indexExists('cart_items', 'cart_items_cart_id_index')) {
+            Schema::table('cart_items', function (Blueprint $table) {
+                $table->dropIndex(['cart_id']);
+            });
+        }
+
+        if ($this->indexExists('cart_items', 'cart_items_book_id_index')) {
+            Schema::table('cart_items', function (Blueprint $table) {
+                $table->dropIndex(['book_id']);
+            });
+        }
 
         // Drop unique if exists
-        $cartItemUnique = DB::select("SHOW INDEX FROM `cart_items` WHERE Key_name = ?", ['cart_items_cart_id_book_id_unique']);
-        if (!empty($cartItemUnique)) {
+        if ($this->indexExists('cart_items', 'cart_items_cart_id_book_id_unique')) {
             Schema::table('cart_items', function (Blueprint $table) {
                 $table->dropUnique(['cart_id', 'book_id']);
             });
         }
 
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropIndex(['user_id']);
-            $table->dropIndex(['status']);
-            $table->dropIndex(['user_id', 'created_at']);
-        });
+        if ($this->indexExists('orders', 'orders_user_id_index')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->dropIndex(['user_id']);
+            });
+        }
 
-        Schema::table('order_items', function (Blueprint $table) {
-            $table->dropIndex(['order_id']);
-            $table->dropIndex(['book_id']);
-        });
+        if ($this->indexExists('orders', 'orders_status_index')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->dropIndex(['status']);
+            });
+        }
+
+        if ($this->indexExists('orders', 'orders_user_id_created_at_index')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->dropIndex(['user_id', 'created_at']);
+            });
+        }
+
+        if ($this->indexExists('order_items', 'order_items_order_id_index')) {
+            Schema::table('order_items', function (Blueprint $table) {
+                $table->dropIndex(['order_id']);
+            });
+        }
+
+        if ($this->indexExists('order_items', 'order_items_book_id_index')) {
+            Schema::table('order_items', function (Blueprint $table) {
+                $table->dropIndex(['book_id']);
+            });
+        }
 
         // Drop unique on carts.user_id if exists
-        $cartsUnique = DB::select("SHOW INDEX FROM `carts` WHERE Key_name = ?", ['carts_user_id_unique']);
-        if (!empty($cartsUnique)) {
+        if ($this->indexExists('carts', 'carts_user_id_unique')) {
             Schema::table('carts', function (Blueprint $table) {
                 $table->dropUnique(['user_id']);
             });
         }
 
-        Schema::table('wishlists', function (Blueprint $table) {
-            $table->dropIndex(['user_id']);
-            $table->dropIndex(['book_id']);
-        });
+        if ($this->indexExists('wishlists', 'wishlists_user_id_index')) {
+            Schema::table('wishlists', function (Blueprint $table) {
+                $table->dropIndex(['user_id']);
+            });
+        }
+
+        if ($this->indexExists('wishlists', 'wishlists_book_id_index')) {
+            Schema::table('wishlists', function (Blueprint $table) {
+                $table->dropIndex(['book_id']);
+            });
+        }
 
         // Drop unique on wishlists if exists
-        $wishlistUnique = DB::select("SHOW INDEX FROM `wishlists` WHERE Key_name = ?", ['wishlists_user_id_book_id_unique']);
-        if (!empty($wishlistUnique)) {
+        if ($this->indexExists('wishlists', 'wishlists_user_id_book_id_unique')) {
             Schema::table('wishlists', function (Blueprint $table) {
                 $table->dropUnique(['user_id', 'book_id']);
             });
         }
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['role']);
-        });
+        if ($this->indexExists('users', 'users_role_index')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropIndex(['role']);
+            });
+        }
     }
 };
