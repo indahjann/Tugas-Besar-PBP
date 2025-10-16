@@ -6,7 +6,6 @@
             <img src="{{ $book->cover_url }}" alt="{{ $book->name }}" class="book-image">
         </a>
         
-        <!-- Favorites button (Modern style) - positioned in top right -->
         <button class="btn-favorites {{ in_array($book->id, $userWishlist) ? 'active' : '' }}" 
                 data-book-id="{{ $book->id }}" 
                 title="{{ in_array($book->id, $userWishlist) ? 'Remove from favorites' : 'Add to favorites' }}">

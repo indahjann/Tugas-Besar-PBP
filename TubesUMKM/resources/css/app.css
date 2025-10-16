@@ -8,7 +8,6 @@
 /* Page-specific Imports */
 @import "./welcome/promo.css";
 @import "./welcome/carousel.css";
-@import "./welcome/cards.css";
 @import "./welcome/responsive.css";
 @import "./categories.css";
 @import "./cart.css";

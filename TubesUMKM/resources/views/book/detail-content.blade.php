@@ -158,13 +158,9 @@
                     <div class="related-books-section">
                         <h2 class="section-title">Buku Terkait</h2>
                         
-                        <div class="related-books-grid">
+                        <div class="books-grid-modern" id="relatedBooksGrid">
                             @foreach($relatedBooks as $relatedBook)
-                                @include('components.book-card', [
-                                    'book' => $relatedBook,
-                                    'userWishlist' => $userWishlist,
-                                    'isRelated' => true
-                                ])
+                                <x-book-card :book="$relatedBook" :user-wishlist="$userWishlist ?? []" />
                             @endforeach
                         </div>
                     </div>
