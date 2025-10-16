@@ -50,22 +50,29 @@ class AdminController extends Controller
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
-            'author' => 'nullable|string|max:255',
-            'publisher' => 'nullable|string|max:255',
+            'author' => 'required|string|max:255',
+            'publisher' => 'required|string|max:255',
             'year' => 'nullable|digits:4|integer|min:1900|max:' . date('Y'),
             'isbn' => 'nullable|string|unique:books,isbn',
             'category_id' => 'required|exists:categories,id',
             'is_active' => 'boolean',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'cover_image' => 'nullable|string',
+            'cover_upload' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        // Handle cover image upload
-        if ($request->hasFile('cover_image')) {
-            $path = $request->file('cover_image')->store('book-covers', 'public');
+        // Handle cover image: priority to file upload, then URL
+        if ($request->hasFile('cover_upload')) {
+            $path = $request->file('cover_upload')->store('book-covers', 'public');
             $validated['cover_image'] = $path;
+        } elseif (empty($validated['cover_image'])) {
+            // Default placeholder if no cover provided
+            $validated['cover_image'] = 'https://via.placeholder.com/200x300?text=No+Cover';
         }
 
-        $validated['is_active'] = $request->has('is_active') ? true : false;
+        $validated['is_active'] = $request->boolean('is_active', true);
+        
+        // Remove cover_upload from validated data
+        unset($validated['cover_upload']);
 
         Book::create($validated);
 
@@ -92,26 +99,30 @@ class AdminController extends Controller
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
-            'author' => 'nullable|string|max:255',
-            'publisher' => 'nullable|string|max:255',
+            'author' => 'required|string|max:255',
+            'publisher' => 'required|string|max:255',
             'year' => 'nullable|digits:4|integer|min:1900|max:' . date('Y'),
             'isbn' => 'nullable|string|unique:books,isbn,' . $book->id,
             'category_id' => 'required|exists:categories,id',
             'is_active' => 'boolean',
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'cover_image' => 'nullable|string',
+            'cover_upload' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         // Handle cover image upload
-        if ($request->hasFile('cover_image')) {
-            // Delete old image if exists
-            if ($book->cover_image) {
+        if ($request->hasFile('cover_upload')) {
+            // Delete old image if it's a local file
+            if ($book->cover_image && !filter_var($book->cover_image, FILTER_VALIDATE_URL)) {
                 Storage::disk('public')->delete($book->cover_image);
             }
-            $path = $request->file('cover_image')->store('book-covers', 'public');
+            $path = $request->file('cover_upload')->store('book-covers', 'public');
             $validated['cover_image'] = $path;
         }
 
-        $validated['is_active'] = $request->has('is_active') ? true : false;
+        $validated['is_active'] = $request->boolean('is_active', true);
+        
+        // Remove cover_upload from validated data
+        unset($validated['cover_upload']);
 
         $book->update($validated);
 
