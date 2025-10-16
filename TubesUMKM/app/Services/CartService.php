@@ -67,7 +67,7 @@ class CartService
      */
     public function updateItem(int $cartItemId, int $newQty, int $userId): CartItem
     {
-        return DB::transaction(function () use ($cartItemId, $newQty) {
+        return DB::transaction(function () use ($cartItemId, $newQty, $userId) {
             $cartItem = CartItem::findOrFail($cartItemId);
 
             // Validasi ownership

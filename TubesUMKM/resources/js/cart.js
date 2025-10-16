@@ -27,12 +27,17 @@ class CartManager {
 
         // Quantity controls in cart page
         document.addEventListener('click', (e) => {
-            if (e.target.matches('.qty-btn.plus')) {
-                this.handleQuantityIncrease(e.target);
-            } else if (e.target.matches('.qty-btn.minus')) {
-                this.handleQuantityDecrease(e.target);
-            } else if (e.target.matches('.delete-item-btn')) {
-                this.handleRemoveItem(e.target);
+            // Use closest() to handle clicks on button or its child elements
+            const plusBtn = e.target.closest('.qty-btn.plus');
+            const minusBtn = e.target.closest('.qty-btn.minus');
+            const deleteBtn = e.target.closest('.delete-item-btn');
+            
+            if (plusBtn) {
+                this.handleQuantityIncrease(plusBtn);
+            } else if (minusBtn) {
+                this.handleQuantityDecrease(minusBtn);
+            } else if (deleteBtn) {
+                this.handleRemoveItem(deleteBtn);
             }
         });
 
