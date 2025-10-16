@@ -63,8 +63,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Cart Management
-    Route::prefix('cart')->name('cart.')->group(function () {
+    // Cart Management (User Only)
+    Route::middleware('user')->prefix('cart')->name('cart.')->group(function () {
         Route::get('/', [CartController::class, 'index'])->name('index');
         Route::get('/data', [CartController::class, 'getCartData'])->name('data');
         Route::post('/add', [CartController::class, 'addItem'])->name('add');
@@ -72,18 +72,20 @@ Route::middleware('auth')->group(function () {
         Route::delete('/remove/{cartItemId}', [CartController::class, 'removeItem'])->name('remove');
     });
 
-    // Wishlist Management
-    Route::prefix('wishlist')->name('wishlist.')->group(function () {
+    // Wishlist Management (User Only)
+    Route::middleware('user')->prefix('wishlist')->name('wishlist.')->group(function () {
         Route::get('/', [WishlistController::class, 'index'])->name('index');
         Route::post('/toggle', [WishlistController::class, 'toggle'])->name('toggle');
     });
 
-    // Checkout
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    // Checkout (User Only)
+    Route::middleware('user')->group(function () {
+        Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+        Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    });
 
-    // Order Management (User)
-    Route::prefix('orders')->name('orders.')->group(function () {
+    // Order Management (User Only)
+    Route::middleware('user')->prefix('orders')->name('orders.')->group(function () {
         Route::get('/', [OrderController::class, 'index'])->name('index');
         Route::get('/{order}', [OrderController::class, 'show'])->name('show');
         Route::post('/{order}/cancel', [OrderController::class, 'cancel'])->name('cancel');

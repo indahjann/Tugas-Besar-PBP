@@ -104,7 +104,7 @@ class CartService
      */
     public function removeItem(int $cartItemId, int $userId): void
     {
-        DB::transaction(function () use ($cartItemId) {
+        DB::transaction(function () use ($cartItemId, $userId) {
             $cartItem = CartItem::findOrFail($cartItemId);
             $product = $cartItem->book;
 
