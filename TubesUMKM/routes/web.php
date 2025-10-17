@@ -114,10 +114,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // Orders Management (Admin)
-    Route::prefix('orders')->group(function () {
-        Route::get('/', [AdminController::class, 'ordersIndex'])->name('orders.index');
-        Route::get('/{order}', [AdminController::class, 'ordersShow'])->name('orders.show');
-        Route::patch('/{order}/status', [AdminController::class, 'ordersUpdateStatus'])->name('orders.update-status');
+    Route::prefix('orders')->name('orders.')->group(function () {
+        Route::get('/', [AdminController::class, 'ordersIndex'])->name('index');
+        Route::get('/{order}', [AdminController::class, 'ordersShow'])->name('show');
+        Route::patch('/{order}/status', [AdminController::class, 'ordersUpdateStatus'])->name('updateStatus');
     });
 
     // Categories Management

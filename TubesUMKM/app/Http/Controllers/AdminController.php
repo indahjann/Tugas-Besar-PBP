@@ -158,7 +158,19 @@ class AdminController extends Controller
             $query->where('status', $request->status);
         }
 
-        $orders = $query->latest()->paginate(20);
+        // Search by order number or customer name
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $orders = $query->latest()->paginate(15);
         $statuses = Order::getStatuses();
 
         return view('admin.orders.index', compact('orders', 'statuses'));

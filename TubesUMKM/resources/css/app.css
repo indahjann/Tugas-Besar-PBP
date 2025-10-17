@@ -17,6 +17,7 @@
 
 /* Admin Imports */
 @import "./admin-navigation.css";
+@import "./admin/utilities.css";
 
 @tailwind base;
 @tailwind components;

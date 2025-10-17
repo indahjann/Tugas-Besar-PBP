@@ -1,0 +1,69 @@
+/* Admin Categories Styles */
+
+/* Modal Styles */
+.category-modal {
+    @apply fixed inset-0 bg-gray-900 bg-opacity-50 z-50 overflow-y-auto;
+}
+
+.category-modal.hidden {
+    display: none;
+}
+
+.category-modal-content {
+    @apply bg-white rounded-lg shadow-xl max-w-md w-full;
+}
+
+/* Category Card */
+.category-card {
+    @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow;
+}
+
+.category-card-icon {
+    @apply w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center;
+}
+
+.category-card-actions {
+    @apply flex gap-2 pt-4 border-t border-gray-200;
+}
+
+/* Category Stats */
+.category-stat-card {
+    @apply bg-white rounded-lg shadow-md p-6;
+}
+
+.category-stat-icon {
+    @apply p-3 rounded-full mr-4;
+}
+
+.category-stat-icon.blue {
+    @apply bg-blue-100;
+}
+
+.category-stat-icon.green {
+    @apply bg-green-100;
+}
+
+.category-stat-icon.yellow {
+    @apply bg-yellow-100;
+}
+
+/* Text truncate */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Empty State */
+.empty-state {
+    @apply text-center;
+}
+
+.empty-state-icon {
+    @apply text-6xl text-gray-300 mb-4;
+}
+
+.empty-state-text {
+    @apply text-gray-500 text-lg mb-4;
+}

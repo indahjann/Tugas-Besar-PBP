@@ -18,3 +18,8 @@ import './cart';
 import './book-detail';
 import './checkout';
 import './orders';
+
+// Admin scripts (only loaded on admin pages)
+if (window.location.pathname.startsWith('/admin')) {
+    import('./admin/admin');
+}
