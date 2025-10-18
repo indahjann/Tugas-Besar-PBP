@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - {{ config('app.name') }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body>
-    @include('layouts.navigation')
+@extends('layouts.admin')
 
+@section('content')
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="profile-container">
-        <h1 class="page-title">Pengaturan Profile</h1>
+        <h1 class="page-title">Pengaturan Profile Admin</h1>
 
         <div class="profile-grid">
             <!-- Left Column -->
@@ -21,6 +14,16 @@
 
                     @if(session('profile-updated'))
                         <div class="alert alert-success">{{ session('profile-updated') }}</div>
+                    @endif
+
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul style="margin: 0; padding-left: 20px;">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                     @endif
 
                     <form action="{{ route('profile.update') }}" method="POST" class="profile-form">
@@ -160,7 +163,5 @@
             </div>
         </div>
     </div>
-
-    @include('layouts.footer')
-</body>
-</html>
+</div>
+@endsection

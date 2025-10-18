@@ -63,7 +63,7 @@
                             <a href="{{ route('wishlist.index') }}" class="dropdown-item">
                                 <i class="fas fa-heart"></i> Wishlist
                             </a>
-                            <a href="#" class="dropdown-item">
+                            <a href="{{ route('orders.index') }}" class="dropdown-item">
                                 <i class="fas fa-shopping-bag"></i> Orders
                             </a>
                             <form method="POST" action="{{ route('logout') }}">
@@ -122,7 +122,7 @@
                 <a href="{{ route('wishlist.index') }}" class="mobile-nav-link">
                     <i class="fas fa-heart"></i> Wishlist
                 </a>
-                <a href="#" class="mobile-nav-link">
+                <a href="{{ route('orders.index') }}" class="mobile-nav-link">
                     <i class="fas fa-shopping-bag"></i> Orders
                 </a>
                 

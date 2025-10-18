@@ -23,6 +23,16 @@
                         <div class="alert alert-success">{{ session('profile-updated') }}</div>
                     @endif
 
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul style="margin: 0; padding-left: 20px;">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     <form action="{{ route('profile.update') }}" method="POST" class="profile-form">
                         @csrf
                         @method('PATCH')

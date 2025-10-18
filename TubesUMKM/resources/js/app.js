@@ -14,10 +14,18 @@ import './components/book-card';
 // App-specific scripts
 import './carousel';
 import './categories';
-import './cart';
 import './book-detail';
 import './checkout';
 import './orders';
+import './profile';
+
+// Conditional imports
+const currentPath = window.location.pathname;
+
+// Only load cart.js on relevant pages
+if (!currentPath.includes('/profile') && !currentPath.includes('/admin')) {
+    import('./cart');
+}
 
 // Admin scripts (only loaded on admin pages)
 if (window.location.pathname.startsWith('/admin')) {

@@ -31,10 +31,10 @@ Route::get('/books/{book}', [BookController::class, 'show'])->name('books.show')
 Route::get('/search', [ProductController::class, 'search'])->name('search.global');
 Route::get('/search/suggestions', [ProductController::class, 'suggestions'])->name('search.suggestions');
 
-// Static pages
-Route::get('/about', function () {
-    return view('about'); 
-})->name('about');
+// // Static pages
+// Route::get('/about', function () {
+//     return view('about'); 
+// })->name('about');
 
 Route::get('/contact', function () {
     return view('contact'); 
@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
 
     // Cart Management (User Only)
     Route::middleware('user')->prefix('cart')->name('cart.')->group(function () {

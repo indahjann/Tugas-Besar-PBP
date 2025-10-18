@@ -411,6 +411,14 @@ document.addEventListener('click', function(e) {
 
 // Additional initialization for other page elements
 document.addEventListener('DOMContentLoaded', function() {
+  // Only run on home page
+  const isHomePage = window.location.pathname === '/' || document.querySelector('.carousel-section');
+  
+  if (!isHomePage) {
+    console.log('Carousel: Not on home page, skipping initialization');
+    return;
+  }
+  
   // Initial setup of button handlers for non-carousel elements
   setupButtonHandlers();
     
@@ -423,13 +431,29 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
     
-  // Legacy Buy Now buttons for other sections
-  document.querySelectorAll('.btn-primary').forEach(btn => {
-    if (!btn.classList.contains('btn-buy-now')) {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        alert('Buku ditambahkan ke cart! (Demo)');
-      });
-    }
-  });
+  // Legacy Buy Now buttons ONLY in carousel/featured sections
+  const carouselSection = document.querySelector('.carousel-section');
+  const featuredSection = document.querySelector('.featured-section');
+  
+  if (carouselSection) {
+    carouselSection.querySelectorAll('.btn-primary').forEach(btn => {
+      if (!btn.classList.contains('btn-buy-now')) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          alert('Buku ditambahkan ke cart! (Demo)');
+        });
+      }
+    });
+  }
+  
+  if (featuredSection) {
+    featuredSection.querySelectorAll('.btn-primary').forEach(btn => {
+      if (!btn.classList.contains('btn-buy-now')) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          alert('Buku ditambahkan ke cart! (Demo)');
+        });
+      }
+    });
+  }
 });

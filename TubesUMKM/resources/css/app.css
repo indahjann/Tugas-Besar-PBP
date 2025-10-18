@@ -14,6 +14,7 @@
 @import "./book-detail.css";
 @import "./checkout.css";
 @import "./orders.css";
+@import "./profile-new.css";
 
 /* Admin Imports */
 @import "./admin-navigation.css";

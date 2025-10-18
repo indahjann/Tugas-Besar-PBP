@@ -46,13 +46,6 @@
                     </div>
                 </div>
 
-                <!-- Description -->
-                @if($category->description)
-                <p class="text-sm text-gray-700 mb-4 line-clamp-2">{{ $category->description }}</p>
-                @else
-                <p class="text-sm text-gray-400 italic mb-4">Tidak ada deskripsi</p>
-                @endif
-
                 <!-- Action Buttons -->
                 <div class="flex gap-2 pt-4 border-t border-gray-200">
                     <button onclick='openModal("edit", {{ json_encode($category) }})' 
@@ -162,7 +155,7 @@
                 <input type="hidden" id="methodField" name="_method" value="">
                 
                 <!-- Name -->
-                <div class="mb-4">
+                <div class="mb-6">
                     <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
                         Nama Kategori <span class="text-red-500">*</span>
                     </label>
@@ -173,21 +166,6 @@
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                            placeholder="Contoh: Fiksi, Non-Fiksi, Komik">
                     @error('name')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Description -->
-                <div class="mb-6">
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                        Deskripsi
-                    </label>
-                    <textarea name="description" 
-                              id="description" 
-                              rows="3"
-                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Deskripsi singkat tentang kategori ini..."></textarea>
-                    @error('description')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -210,3 +188,11 @@
     </div>
 </div>
 @endsection
+
+@push('head')
+@vite(['resources/css/admin-categories.css'])
+@endpush
+
+@push('scripts')
+@vite(['resources/js/admin-categories.js'])
+@endpush

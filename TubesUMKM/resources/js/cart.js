@@ -10,9 +10,18 @@ class CartManager {
     }
 
     init() {
-        this.bindEvents();
-        this.updateCartCount();
-        this.initializeMinusButtons();
+        // Only initialize if we're on a cart-related page
+        const isCartPage = window.location.pathname.includes('/cart') || 
+                          document.querySelector('.cart-container');
+        
+        if (isCartPage) {
+            this.bindEvents();
+            this.updateCartCount();
+            this.initializeMinusButtons();
+        } else {
+            // Only update cart count on other pages
+            this.updateCartCount();
+        }
     }
 
     bindEvents() {
@@ -461,6 +470,18 @@ class CartManager {
 
 // Initialize cart manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Only initialize CartManager on pages that actually need it
+    // Exclude profile, admin, checkout pages
+    const isProfilePage = window.location.pathname.includes('/profile');
+    const isAdminPage = window.location.pathname.includes('/admin');
+    const isCheckoutPage = window.location.pathname.includes('/checkout');
+    
+    // Skip initialization on certain pages
+    if (isProfilePage || isAdminPage || isCheckoutPage) {
+        console.log('CartManager: Skipping initialization on this page');
+        return;
+    }
+    
     new CartManager();
 });
 
