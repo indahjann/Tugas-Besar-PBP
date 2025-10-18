@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Book;
+use Illuminate\Support\Facades\Storage;
 
 class BookSeeder extends Seeder
 {
@@ -1481,10 +1482,28 @@ class BookSeeder extends Seeder
 
         foreach ($books as $data) {
             // Upsert berbasis ISBN agar idempotent (tidak dobel saat seed ulang)
-            Book::updateOrCreate(
+            $book = Book::updateOrCreate(
                 ['isbn' => $data['isbn']],
-                $data
+                array_merge($data, ['cover_image' => null]) // Set null dulu
             );
+            
+            // Update cover_image dengan path berdasarkan ID buku
+            // Cek berbagai ekstensi file (jpg, jpeg, png, avif)
+            $extensions = ['jpg', 'jpeg', 'png', 'avif'];
+            $coverPath = null;
+            
+            foreach ($extensions as $ext) {
+                $path = 'book-covers/' . $book->id . '.' . $ext;
+                if (Storage::disk('public')->exists($path)) {
+                    $coverPath = $path;
+                    break;
+                }
+            }
+            
+            // Update dengan path yang ditemukan atau null jika tidak ada
+            $book->update([
+                'cover_image' => $coverPath
+            ]);
         }
     }
 }
