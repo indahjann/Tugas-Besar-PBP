@@ -1,23 +1,15 @@
-/* Carousel & featured - Compact Style like Gramedia */
 .featured-section { 
     padding: 0px 0; 
-    background-color: #ffffff;
+    background-color: #ffffff; 
 }
 
-/* Untuk section pertama (Buku Terbaru) */
-.featured-section:first-of-type {
-    margin-top: 0;  /* Hapus gap dari hero */
-    padding-top: 0;  /* Hapus padding atas */
-}
-
-/* Remove alternating backgrounds - keep clean white */
 .featured-section:nth-child(even),
 .featured-section:nth-child(odd) {
-    background-color: #fffdfd;
+    background-color: #ffffff; 
 }
 
 .carousel-container-bg { 
-    background: rgb(239, 239, 239); 
+    background: rgb(227, 224, 224); 
     border-radius: 12px; 
     padding: 20px 40px; 
     box-shadow: none; 

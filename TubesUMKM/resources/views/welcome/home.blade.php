@@ -1,7 +1,9 @@
 {{-- Loop through all sections --}}
+<div class="bg-white">
 @foreach(($sections ?? []) as $sectionKey => $section)
     @if($section['books']->count() > 0)
         <section class="featured-section">
+            <div class="container">
                 <div class="carousel-container-bg">
                     <button class="nav-btn prev" id="prevBtn{{ $loop->index }}"><i class="fas fa-chevron-left"></i></button>
                     <button class="nav-btn next" id="nextBtn{{ $loop->index }}"><i class="fas fa-chevron-right"></i></button>
@@ -19,17 +21,17 @@
                         </div>
                         <div class="text-center mt-4">
                             @if($sectionKey === 'recent')
-                                <a href="/categories" class="btn view-more-btn">VIEW MORE</a>
+                                <a href="{{ route('categories.index') }}" class="btn view-more-btn">VIEW MORE</a>
                             @elseif($sectionKey === 'fiction')
-                                <a href="/categories?category=1" class="btn view-more-btn">VIEW MORE FICTION</a>
+                                <a href="{{ route('categories.show', 1) }}" class="btn view-more-btn">VIEW MORE FICTION</a>
                             @elseif($sectionKey === 'manga')
-                                <a href="/categories?category=3" class="btn view-more-btn">VIEW MORE MANGA</a>
+                                <a href="{{ route('categories.show', 3) }}" class="btn view-more-btn">VIEW MORE MANGA</a>
                             @elseif($sectionKey === 'selfhelp')
-                                <a href="/categories?category=5" class="btn view-more-btn">VIEW MORE SELF-HELP</a>
+                                <a href="{{ route('categories.show', 5) }}" class="btn view-more-btn">VIEW MORE SELF-HELP</a>
                             @elseif($sectionKey === 'technology')
-                                <a href="/categories?category=6" class="btn view-more-btn">VIEW MORE TECH</a>
+                                <a href="{{ route('categories.show', 6) }}" class="btn view-more-btn">VIEW MORE TECH</a>
                             @else
-                                <a href="/categories" class="btn view-more-btn">VIEW MORE</a>
+                                <a href="{{ route('categories.index') }}" class="btn view-more-btn">VIEW MORE</a>
                             @endif
                         </div>
                     </div>
@@ -37,9 +39,10 @@
             </div>
         </section>
         
-        {{-- Add spacing between sections like Gramedia --}}
+        {{-- Add white gap between sections --}}
         @if(!$loop->last)
-            <div style="height: 20px;"></div>
+            <div class="section-gap"></div>
         @endif
     @endif
 @endforeach
+</div>
