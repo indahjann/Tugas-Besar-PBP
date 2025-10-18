@@ -67,35 +67,40 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     }
   };
   
+  // Remove existing clones first
   track.querySelectorAll('.carousel-clone').forEach(el => el.remove());
   
-  const originalItems = Array.from(track.querySelectorAll('.carousel-item-custom'));
+  const originalItems = Array.from(track.querySelectorAll('.carousel-item-custom:not(.carousel-clone)'));
   const itemWidth = 215;
   const totalItems = originalItems.length;
   
   if (totalItems === 0) return;
   
-  const clonesToAppend = Math.min(4, totalItems);
-  for (let i = 0; i < clonesToAppend; i++) {
+  // Clone items for infinite loop - clone ALL items for seamless loop
+  const itemsToClone = totalItems;
+  
+  // Append clones at the end
+  for (let i = 0; i < itemsToClone; i++) {
     const clone = originalItems[i].cloneNode(true);
     clone.classList.add('carousel-clone');
     track.appendChild(clone);
   }
   
-  const clonesToPrepend = Math.min(4, totalItems);
-  for (let i = clonesToPrepend - 1; i >= 0; i--) {
-    const clone = originalItems[totalItems - 1 - i].cloneNode(true);
+  // Prepend clones at the beginning
+  for (let i = itemsToClone - 1; i >= 0; i--) {
+    const clone = originalItems[i].cloneNode(true);
     clone.classList.add('carousel-clone');
     track.insertBefore(clone, track.firstChild);
   }
   
-  const startIndex = clonesToPrepend;
+  const startIndex = itemsToClone;
   let currentIndex = startIndex;
   let currentTranslate = startIndex * itemWidth;
   let isTransitioning = false;
   let lastSlideTime = 0;
   const slideThrottle = 300;
   
+  // Set initial position
   track.style.transform = `translateX(-${currentTranslate}px)`;
   track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
   
@@ -110,11 +115,11 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     track.style.transform = `translateX(-${currentTranslate}px)`;
     
     if (!animate) {
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         if (!instance.isDestroyed) {
           track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         }
-      }, 50);
+      });
     }
   }
   
@@ -136,6 +141,7 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     setTimeout(() => {
       if (instance.isDestroyed) return;
       
+      // Loop back to start when reaching end of clones
       if (currentIndex >= totalItems + startIndex) {
         currentIndex = startIndex;
         currentTranslate = startIndex * itemWidth;
@@ -163,6 +169,7 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     setTimeout(() => {
       if (instance.isDestroyed) return;
       
+      // Loop back to end when reaching start of clones
       if (currentIndex < startIndex) {
         currentIndex = totalItems + startIndex - 1;
         currentTranslate = currentIndex * itemWidth;
@@ -289,7 +296,6 @@ window.addEventListener('popstate', () => {
   }, 100);
 });
 
-// AJAX Navigation Handler - untuk logo BUKUKU
 document.addEventListener('click', (e) => {
   const ajaxLink = e.target.closest('[data-ajax-link]');
   if (ajaxLink) {
@@ -305,7 +311,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Custom event untuk AJAX navigation (jika ada)
 document.addEventListener('contentLoaded', () => {
   setTimeout(() => {
     const carousels = document.querySelectorAll('.custom-carousel');
@@ -315,7 +320,6 @@ document.addEventListener('contentLoaded', () => {
   }, 100);
 });
 
-// Additional listener untuk hash change
 window.addEventListener('hashchange', () => {
   if (window.location.pathname === '/' || window.location.pathname === '') {
     setTimeout(() => {
