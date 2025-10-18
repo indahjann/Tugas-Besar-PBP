@@ -6,29 +6,32 @@
 class CartManager {
     constructor() {
         this.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        this.initialized = false; // Prevent double initialization
         this.init();
     }
 
     init() {
-        // Only initialize if we're on a cart-related page
-        const isCartPage = window.location.pathname.includes('/cart') || 
-                          document.querySelector('.cart-page');
+        if (this.initialized) {
+            console.log('[CartManager] Already initialized, skipping...');
+            return;
+        }
         
         console.log('[CartManager] Init called');
         console.log('[CartManager] Current pathname:', window.location.pathname);
-        console.log('[CartManager] Cart page element found:', !!document.querySelector('.cart-page'));
-        console.log('[CartManager] isCartPage:', isCartPage);
         
-        if (isCartPage) {
-            console.log('[CartManager] Binding events...');
-            this.bindEvents();
-            this.updateCartCount();
+        // Always bind events (event delegation will handle if elements exist)
+        this.bindEvents();
+        
+        // Update cart count on all pages
+        this.updateCartCount();
+        
+        // Initialize minus buttons only if on cart page
+        if (window.location.pathname.includes('/cart')) {
             this.initializeMinusButtons();
-        } else {
-            console.log('[CartManager] Not cart page, only updating count');
-            // Only update cart count on other pages
-            this.updateCartCount();
         }
+        
+        this.initialized = true;
+        console.log('[CartManager] Initialization complete');
     }
 
     bindEvents() {
@@ -486,28 +489,48 @@ class CartManager {
 }
 
 // Initialize cart manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('[CartManager] DOMContentLoaded fired');
+function initCartManager() {
+    console.log('[CartManager] Init function called');
     console.log('[CartManager] Current pathname:', window.location.pathname);
+    console.log('[CartManager] Document readyState:', document.readyState);
     
-    // Only initialize CartManager on pages that actually need it
-    // Exclude profile, admin, checkout pages
-    const isProfilePage = window.location.pathname.includes('/profile');
+    // Skip initialization on admin and checkout pages only
     const isAdminPage = window.location.pathname.includes('/admin');
     const isCheckoutPage = window.location.pathname.includes('/checkout');
     
-    console.log('[CartManager] isProfilePage:', isProfilePage);
     console.log('[CartManager] isAdminPage:', isAdminPage);
     console.log('[CartManager] isCheckoutPage:', isCheckoutPage);
     
     // Skip initialization on certain pages
-    if (isProfilePage || isAdminPage || isCheckoutPage) {
-        console.log('[CartManager] Skipping initialization on this page');
+    if (isAdminPage || isCheckoutPage) {
+        console.log('[CartManager] Skipping initialization on admin/checkout page');
         return;
     }
     
     console.log('[CartManager] Creating new CartManager instance...');
-    new CartManager();
+    window.cartManager = new CartManager(); // Make it global for debugging
+    console.log('[CartManager] Instance created:', window.cartManager);
+}
+
+// Use multiple strategies to ensure initialization
+console.log('[CartManager Module] Initial readyState:', document.readyState);
+
+if (document.readyState === 'loading') {
+    // DOM is still loading
+    console.log('[CartManager Module] Waiting for DOMContentLoaded...');
+    document.addEventListener('DOMContentLoaded', initCartManager);
+} else {
+    // DOM is already loaded
+    console.log('[CartManager Module] DOM already loaded, initializing immediately...');
+    initCartManager();
+}
+
+// Fallback: also try on window load as last resort
+window.addEventListener('load', () => {
+    if (!window.cartManager) {
+        console.log('[CartManager Module] Fallback initialization on window load');
+        initCartManager();
+    }
 });
 
 // Export for use in other modules
