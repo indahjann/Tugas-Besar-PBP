@@ -12,6 +12,7 @@ import './components/footer';
 import './components/book-card';
 
 // App-specific scripts
+import './promo';
 import './carousel';
 import './categories';
 import './book-detail';

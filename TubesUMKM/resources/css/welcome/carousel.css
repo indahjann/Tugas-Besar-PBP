@@ -1,5 +1,5 @@
 .featured-section { 
-    padding: 0px 0; 
+    padding: 15px 0; 
     background-color: #ffffff; 
 }
 
@@ -9,7 +9,7 @@
 }
 
 .carousel-container-bg { 
-    background: rgb(227, 224, 224); 
+    background: rgba(216, 215, 215, 0.281); 
     border-radius: 12px; 
     padding: 20px 40px; 
     box-shadow: none; 

@@ -5,6 +5,7 @@
 @endpush
 
 @section('content')
+    @includeWhen(true, 'welcome.promo')
     @includeWhen(true, 'welcome.home')
 @endsection
 
