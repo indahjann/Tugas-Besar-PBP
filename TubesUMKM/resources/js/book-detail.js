@@ -14,9 +14,6 @@ function initBookDetail() {
     initShareFunctionality();
 }
 
-/**
- * Initialize Read More/Less functionality for book description
- */
 function initReadMoreFunctionality() {
     const readMoreBtns = document.querySelectorAll('.read-more-btn');
     
@@ -28,11 +25,9 @@ function initReadMoreFunctionality() {
             const isExpanded = this.textContent.includes('Lebih Sedikit');
             
             if (isExpanded) {
-                // Collapse
                 preview.textContent = fullText.substring(0, 300) + '...';
                 this.innerHTML = 'Baca Selengkapnya <i class="fas fa-chevron-down"></i>';
             } else {
-                // Expand
                 preview.textContent = fullText;
                 this.innerHTML = 'Baca Lebih Sedikit <i class="fas fa-chevron-up"></i>';
             }
@@ -50,21 +45,18 @@ function initWishlistFunctionality() {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Check if user is authenticated (handled by Blade template)
             if (this.getAttribute('onclick')) {
-                return; // Let the onclick handle redirect to login
+                return;
             }
             
             const bookId = this.dataset.bookId;
             const icon = this.querySelector('i');
             const isActive = this.classList.contains('wishlist-active');
             
-            // Show loading state
             const originalContent = this.innerHTML;
             this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Loading...</span>';
             this.disabled = true;
             
-            // Make API request
             fetch('/wishlist/toggle', {
                 method: 'POST',
                 headers: {
@@ -78,12 +70,10 @@ function initWishlistFunctionality() {
                 if (data.success) {
                     const isWishlisted = data.action === 'added';
                     
-                    // Sync across all components using GlobalSync
                     if (window.GlobalSync) {
                         window.GlobalSync.syncWishlistStatus(bookId, isWishlisted);
                     }
                     
-                    // Update current button
                     if (isWishlisted) {
                         this.classList.add('wishlist-active');
                         this.innerHTML = '<i class="fas fa-heart"></i> <span>Favorit</span>';
@@ -92,7 +82,6 @@ function initWishlistFunctionality() {
                         this.innerHTML = '<i class="far fa-heart"></i> <span>Favorit</span>';
                     }
                     
-                    // Show unified notification
                     const message = isWishlisted ? 'Buku ditambahkan ke wishlist!' : 'Buku dihapus dari wishlist!';
                     if (window.GlobalSync) {
                         window.GlobalSync.showNotification(message, isWishlisted ? 'success' : 'info');
@@ -119,9 +108,6 @@ function initWishlistFunctionality() {
     });
 }
 
-/**
- * Initialize Add to Cart functionality
- */
 function initAddToCartFunctionality() {
     const addToCartBtns = document.querySelectorAll('.add-to-cart-btn:not(.add-to-cart-disabled)');
     
@@ -129,19 +115,16 @@ function initAddToCartFunctionality() {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Check if user is authenticated (handled by Blade template)
             if (this.getAttribute('onclick')) {
-                return; // Let the onclick handle redirect to login
+                return;
             }
             
             const bookId = this.dataset.bookId;
             const originalContent = this.innerHTML;
             
-            // Show loading state
             this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Menambahkan...</span>';
             this.disabled = true;
             
-            // Make API request
             fetch('/cart/add', {
                 method: 'POST',
                 headers: {
@@ -156,27 +139,35 @@ function initAddToCartFunctionality() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Show success state
                     this.innerHTML = '<i class="fas fa-check"></i> <span>Ditambahkan!</span>';
                     this.style.background = 'linear-gradient(135deg, #28a745 0%, #20692a 100%)';
                     
-                    // Update cart counter globally
+                    // PERBAIKAN: Gunakan fungsi yang sama dengan cart.js
                     if (data.cart_count !== undefined) {
-                        if (window.GlobalSync) {
+                        // Prioritas 1: Gunakan fungsi global dari CartManager
+                        if (window.cartManager && typeof window.cartManager.updateCartBadge === 'function') {
+                            window.cartManager.updateCartBadge(data.cart_count);
+                        }
+                        // Prioritas 2: Gunakan fungsi global updateCartBadgeWithCount
+                        else if (window.updateCartBadgeWithCount) {
+                            window.updateCartBadgeWithCount(data.cart_count);
+                        }
+                        // Prioritas 3: Gunakan GlobalSync
+                        else if (window.GlobalSync && typeof window.GlobalSync.updateCartCounter === 'function') {
                             window.GlobalSync.updateCartCounter(data.cart_count);
-                        } else {
-                            updateCartCounter(data.cart_count);
+                        }
+                        // Fallback: Update manual
+                        else {
+                            updateCartCounterFallback(data.cart_count);
                         }
                     }
                     
-                    // Show unified notification
                     if (window.GlobalSync) {
                         window.GlobalSync.showNotification('Produk berhasil ditambahkan ke keranjang!', 'success');
                     } else {
                         showNotification('Produk berhasil ditambahkan ke keranjang!', 'success');
                     }
                     
-                    // Reset button after 2 seconds
                     setTimeout(() => {
                         this.innerHTML = originalContent;
                         this.style.background = '';
@@ -200,9 +191,6 @@ function initAddToCartFunctionality() {
     });
 }
 
-/**
- * Initialize Share functionality
- */
 function initShareFunctionality() {
     const shareBtns = document.querySelectorAll('.share-btn');
     
@@ -213,7 +201,6 @@ function initShareFunctionality() {
             const title = document.querySelector('.book-title').textContent;
             const url = window.location.href;
             
-            // Check if Web Share API is supported
             if (navigator.share) {
                 navigator.share({
                     title: title,
@@ -223,7 +210,6 @@ function initShareFunctionality() {
                     console.log('Share cancelled');
                 });
             } else {
-                // Fallback: Copy to clipboard
                 copyToClipboard(url);
                 showNotification('Link berhasil disalin ke clipboard!', 'success');
             }
@@ -232,29 +218,28 @@ function initShareFunctionality() {
 }
 
 /**
- * Update cart counter in navigation
+ * Update cart counter - Fallback implementation
  */
-function updateCartCounter(count) {
-    const cartCounters = document.querySelectorAll('.cart-count, .cart-counter');
-    cartCounters.forEach(counter => {
-        counter.textContent = count;
+function updateCartCounterFallback(count) {
+    // Update semua badge cart di navbar
+    const cartBadges = document.querySelectorAll('.cart-badge, .cart-count, .cart-counter');
+    
+    cartBadges.forEach(badge => {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'inline-flex' : 'none';
         
-        // Add animation
-        counter.style.transform = 'scale(1.2)';
+        // Add bounce animation
+        badge.classList.add('cart-badge-bounce');
         setTimeout(() => {
-            counter.style.transform = 'scale(1)';
-        }, 200);
+            badge.classList.remove('cart-badge-bounce');
+        }, 500);
     });
 }
 
-/**
- * Copy text to clipboard
- */
 function copyToClipboard(text) {
     if (navigator.clipboard) {
         navigator.clipboard.writeText(text);
     } else {
-        // Fallback for older browsers
         const textArea = document.createElement('textarea');
         textArea.value = text;
         document.body.appendChild(textArea);
@@ -265,11 +250,7 @@ function copyToClipboard(text) {
     }
 }
 
-/**
- * Show notification to user
- */
 function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
@@ -282,7 +263,6 @@ function showNotification(message, type = 'info') {
         </button>
     `;
     
-    // Add styles
     Object.assign(notification.style, {
         position: 'fixed',
         top: '20px',
@@ -301,21 +281,17 @@ function showNotification(message, type = 'info') {
         transition: 'all 0.3s ease'
     });
     
-    // Add to page
     document.body.appendChild(notification);
     
-    // Animate in
     setTimeout(() => {
         notification.style.transform = 'translateX(0)';
     }, 100);
     
-    // Handle close button
     const closeBtn = notification.querySelector('.notification-close');
     closeBtn.addEventListener('click', () => {
         removeNotification(notification);
     });
     
-    // Auto remove after 5 seconds
     setTimeout(() => {
         if (document.body.contains(notification)) {
             removeNotification(notification);
@@ -352,6 +328,6 @@ function getNotificationColor(type) {
 
 // Export functions for potential use by other modules
 window.BookDetail = {
-    updateCartCounter,
+    updateCartCounter: updateCartCounterFallback,
     showNotification
 };

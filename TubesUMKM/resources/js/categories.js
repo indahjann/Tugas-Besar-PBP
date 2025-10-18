@@ -1,114 +1,202 @@
-// Categories Page JavaScript
+/**
+ * Categories Page JavaScript
+ * Handles sorting, filtering, and wishlist interactions
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Sort By Dropdown
+    console.log('[Categories] Initializing...');
+    
+    // Initialize all features
     setupSortDropdown();
-    
-    // Book Cards Interactions
     setupBookCardInteractions();
-    
-    // Filter Options
     setupFilterOptions();
-    
-    // Mobile Sidebar Toggle (for smaller screens)
     setupMobileSidebar();
+    
+    // PENTING: Sync wishlist state from sessionStorage
+    syncWishlistStateFromSession();
 });
 
-function setupSortDropdown() {
-    const sortSelect = document.getElementById('sortSelect');
-    if (sortSelect) {
-        sortSelect.addEventListener('change', function() {
-            const currentUrl = new URL(window.location);
-            const sortValue = this.value;
-            
-            // Update URL parameter
-            currentUrl.searchParams.set('sort', sortValue);
-            
-            // Redirect to new URL with sort parameter
-            window.location.href = currentUrl.toString();
-        });
+// TAMBAHKAN: Re-sync setiap kali page visible (user kembali ke tab/page ini)
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        console.log('[Categories] Page visible, re-syncing wishlist state');
+        syncWishlistStateFromSession();
     }
+});
+
+// TAMBAHKAN: Re-sync ketika window focus (user kembali dari wishlist page)
+window.addEventListener('focus', function() {
+    console.log('[Categories] Window focused, re-syncing wishlist state');
+    syncWishlistStateFromSession();
+});
+
+// TAMBAHKAN: Re-sync dari pageshow event (detects back/forward navigation)
+window.addEventListener('pageshow', function(event) {
+    // event.persisted true = page loaded from cache (back button)
+    if (event.persisted) {
+        console.log('[Categories] Page loaded from cache, re-syncing wishlist state');
+        syncWishlistStateFromSession();
+    }
+});
+
+/**
+ * Sync wishlist button states from sessionStorage
+ * This ensures buttons reflect the actual wishlist state
+ */
+function syncWishlistStateFromSession() {
+    const wishlistState = JSON.parse(sessionStorage.getItem('wishlistState') || '{}');
+    console.log('[Categories] Syncing wishlist state:', wishlistState);
+    
+    document.querySelectorAll('.btn-favorites').forEach(btn => {
+        const bookId = btn.getAttribute('data-book-id');
+        const shouldBeActive = wishlistState[bookId] === true;
+        const icon = btn.querySelector('i');
+        
+        console.log(`[Categories] Book ${bookId}: shouldBeActive=${shouldBeActive}, currentlyActive=${btn.classList.contains('active')}`);
+        
+        if (shouldBeActive) {
+            // Should be in wishlist
+            if (!btn.classList.contains('active')) {
+                btn.classList.add('active');
+            }
+            if (icon) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            }
+        } else {
+            // Should NOT be in wishlist
+            if (btn.classList.contains('active')) {
+                btn.classList.remove('active');
+            }
+            if (icon) {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            }
+        }
+    });
 }
 
-function setupBookCardInteractions() {
-    // Add to Cart buttons
-    document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            // This will be handled by cart.js
-        });
-    });
+/**
+ * Setup sort dropdown functionality
+ */
+function setupSortDropdown() {
+    const sortSelect = document.getElementById('sortSelect');
+    if (!sortSelect) return;
     
-    // Favorites/Wishlist buttons
+    sortSelect.addEventListener('change', function() {
+        const currentUrl = new URL(window.location);
+        const sortValue = this.value;
+        
+        currentUrl.searchParams.set('sort', sortValue);
+        window.location.href = currentUrl.toString();
+    });
+}
+
+/**
+ * Setup book card interactions (Add to Cart & Wishlist)
+ */
+function setupBookCardInteractions() {
+    // Wishlist buttons
     document.querySelectorAll('.btn-favorites').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             toggleWishlist(this);
+        });
+    });
+    
+    // Add to Cart buttons (handled by cart.js)
+    document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
         });
     });
 }
 
-// Wishlist functionality
+/**
+ * Toggle wishlist for a book
+ */
 function toggleWishlist(button) {
     const bookId = button.getAttribute('data-book-id');
-    const bookCard = button.closest('.book-card');
-    const bookTitle = bookCard.querySelector('.book-title').textContent;
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
     
     if (!bookId) {
         showNotification('Error: Book ID not found', 'error');
         return;
     }
     
-    // Add loading state
-    const originalContent = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    button.disabled = true;
+    if (!csrfToken) {
+        showNotification('Error: CSRF token not found', 'error');
+        return;
+    }
     
+    // Save original state
+    const wasActive = button.classList.contains('active');
+    const icon = button.querySelector('i');
+    
+    // Show loading
+    button.disabled = true;
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    console.log('[Categories] Toggling wishlist for book:', bookId, 'wasActive:', wasActive);
+    
+    // Make request
     fetch('/wishlist/toggle', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
+            'X-CSRF-TOKEN': csrfToken.content,
             'Accept': 'application/json'
         },
-        body: JSON.stringify({
-            book_id: bookId
-        })
+        body: JSON.stringify({ book_id: bookId })
     })
     .then(response => response.json())
     .then(data => {
+        console.log('[Categories] Toggle response:', data);
+        
         if (data.success) {
-            // Update button state
-            const icon = button.querySelector('i');
+            // Update button UI
             if (data.action === 'added') {
-                icon.classList.remove('far');
-                icon.classList.add('fas');
                 button.classList.add('active');
+                button.innerHTML = '<i class="fas fa-heart"></i>';
                 button.title = 'Remove from favorites';
-                showNotification(data.message, 'success');
+                updateSessionStorage(bookId, true);
+                showNotification(data.message || 'Added to wishlist', 'success');
             } else {
-                icon.classList.remove('fas');
-                icon.classList.add('far');
                 button.classList.remove('active');
+                button.innerHTML = '<i class="far fa-heart"></i>';
                 button.title = 'Add to favorites';
-                showNotification(data.message, 'info');
+                updateSessionStorage(bookId, false);
+                showNotification(data.message || 'Removed from wishlist', 'info');
             }
         } else {
+            // Revert on error
+            button.innerHTML = originalHTML;
             showNotification(data.message || 'Failed to update wishlist', 'error');
-            button.innerHTML = originalContent;
         }
     })
     .catch(error => {
-        console.error('Wishlist error:', error);
+        console.error('[Categories] Wishlist error:', error);
+        button.innerHTML = originalHTML;
         showNotification('Failed to update wishlist', 'error');
-        button.innerHTML = originalContent;
     })
     .finally(() => {
-        if (button.innerHTML.includes('fa-spinner')) {
-            button.innerHTML = originalContent;
-        }
         button.disabled = false;
     });
+}
+
+function updateSessionStorage(bookId, isActive) {
+    const wishlistState = JSON.parse(sessionStorage.getItem('wishlistState') || '{}');
+    
+    if (isActive) {
+        wishlistState[bookId] = true;
+    } else {
+        delete wishlistState[bookId];
+    }
+    
+    sessionStorage.setItem('wishlistState', JSON.stringify(wishlistState));
+    console.log('[Categories] Updated sessionStorage:', wishlistState);
 }
 
 function setupFilterOptions() {
@@ -116,22 +204,16 @@ function setupFilterOptions() {
         item.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Update active state
             document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
             this.classList.add('active');
             
-            // Get sort option
             const sortText = this.textContent.trim();
             showNotification(`Sorting by: ${sortText}`, 'info');
-            
-            // Here you would implement actual sorting logic
-            // For demo purposes, we'll just show the notification
         });
     });
 }
 
 function setupMobileSidebar() {
-    // Create mobile toggle button if needed
     if (window.innerWidth <= 768) {
         const sidebar = document.querySelector('.categories-sidebar');
         if (sidebar && !document.querySelector('.mobile-sidebar-toggle')) {
@@ -140,39 +222,44 @@ function setupMobileSidebar() {
             toggleBtn.innerHTML = '<i class="fas fa-filter"></i> Filters & Categories';
             
             const booksContent = document.querySelector('.books-content');
-            booksContent.parentNode.insertBefore(toggleBtn, booksContent);
-            
-            toggleBtn.addEventListener('click', function() {
-                sidebar.classList.toggle('mobile-show');
-                const icon = this.querySelector('i');
-                if (sidebar.classList.contains('mobile-show')) {
-                    icon.classList.replace('fa-filter', 'fa-times');
-                } else {
-                    icon.classList.replace('fa-times', 'fa-filter');
-                }
-            });
+            if (booksContent) {
+                booksContent.parentNode.insertBefore(toggleBtn, booksContent);
+                
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('mobile-show');
+                    const icon = this.querySelector('i');
+                    if (sidebar.classList.contains('mobile-show')) {
+                        icon.classList.replace('fa-filter', 'fa-times');
+                    } else {
+                        icon.classList.replace('fa-times', 'fa-filter');
+                    }
+                });
+            }
         }
     }
 }
 
 function showNotification(message, type = 'info') {
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
+    
+    const iconMap = {
+        'success': 'check-circle',
+        'error': 'exclamation-circle',
+        'info': 'info-circle'
+    };
+    
     notification.innerHTML = `
         <div class="notification-content">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <i class="fas fa-${iconMap[type]}"></i>
             <span>${message}</span>
         </div>
     `;
     
-    // Add to page
     document.body.appendChild(notification);
     
-    // Show notification
     setTimeout(() => notification.classList.add('show'), 100);
     
-    // Hide and remove notification
     setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => {
@@ -183,54 +270,30 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Handle window resize
 window.addEventListener('resize', function() {
     const sidebar = document.querySelector('.categories-sidebar');
     const toggleBtn = document.querySelector('.mobile-sidebar-toggle');
     
     if (window.innerWidth > 768) {
-        // Desktop view
-        if (sidebar) {
-            sidebar.classList.remove('mobile-show');
-        }
-        if (toggleBtn) {
-            toggleBtn.style.display = 'none';
-        }
+        if (sidebar) sidebar.classList.remove('mobile-show');
+        if (toggleBtn) toggleBtn.style.display = 'none';
     } else {
-        // Mobile view
-        if (toggleBtn) {
-            toggleBtn.style.display = 'block';
-        }
+        if (toggleBtn) toggleBtn.style.display = 'block';
     }
 });
 
-// Add CSS for notifications
 const notificationStyles = `
     .notification {
         position: fixed;
-        top: 5rem;
-        right: 1rem;
+        top: 20px;
+        right: 20px;
         background: white;
+        padding: 1rem 1.5rem;
         border-radius: 8px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        padding: 1rem;
-        z-index: 9999;
-        transform: translateX(100%);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateX(400px);
         transition: transform 0.3s ease;
-        max-width: 300px;
-        border-left: 4px solid #667eea;
-    }
-    
-    .notification.notification-success {
-        border-left-color: #10b981;
-    }
-    
-    .notification.notification-error {
-        border-left-color: #ef4444;
-    }
-    
-    .notification.notification-info {
-        border-left-color: #3b82f6;
+        z-index: 9999;
     }
     
     .notification.show {
@@ -240,50 +303,22 @@ const notificationStyles = `
     .notification-content {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        color: #374151;
-        font-weight: 500;
+        gap: 0.75rem;
     }
     
-    .notification-success .notification-content i {
-        color: #10b981;
-    }
-    
-    .notification-error .notification-content i {
-        color: #ef4444;
-    }
-    
-    .notification-info .notification-content i {
-        color: #3b82f6;
-    }
-    
-    .mobile-sidebar-toggle {
-        display: none;
-    }
+    .notification-success i { color: #10b981; }
+    .notification-error i { color: #ef4444; }
+    .notification-info i { color: #3b82f6; }
     
     @media (max-width: 768px) {
-        .categories-sidebar {
-            position: fixed;
-            top: 0;
-            left: -100%;
-            width: 280px;
-            height: 100vh;
-            z-index: 9999;
-            transition: left 0.3s ease;
-            overflow-y: auto;
-        }
-        
-        .categories-sidebar.mobile-show {
-            left: 0;
-        }
-        
-        .mobile-sidebar-toggle {
-            display: block !important;
+        .notification {
+            right: 10px;
+            left: 10px;
+            top: 10px;
         }
     }
 `;
 
-// Inject styles
 const styleSheet = document.createElement('style');
 styleSheet.textContent = notificationStyles;
 document.head.appendChild(styleSheet);

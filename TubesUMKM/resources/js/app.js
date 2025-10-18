@@ -20,6 +20,7 @@ import './checkout';
 import './orders';
 import './profile';
 import './cart';
+import './wishlist';
 
 // Admin scripts (only loaded on admin pages)
 if (window.location.pathname.startsWith('/admin')) {

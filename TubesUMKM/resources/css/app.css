@@ -15,6 +15,7 @@
 @import "./checkout.css";
 @import "./orders.css";
 @import "./profile-new.css";
+@import "./wishlist.css";
 
 /* Admin Imports */
 @import "./admin-navigation.css";
