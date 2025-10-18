@@ -1,7 +1,13 @@
 /* Carousel & featured - Compact Style like Gramedia */
 .featured-section { 
-    padding: 30px 0; 
+    padding: 0px 0; 
     background-color: #ffffff;
+}
+
+/* Untuk section pertama (Buku Terbaru) */
+.featured-section:first-of-type {
+    margin-top: 0;  /* Hapus gap dari hero */
+    padding-top: 0;  /* Hapus padding atas */
 }
 
 /* Remove alternating backgrounds - keep clean white */
@@ -11,12 +17,12 @@
 }
 
 .carousel-container-bg { 
-    background: rgb(255, 255, 255); 
+    background: rgb(239, 239, 239); 
     border-radius: 12px; 
     padding: 20px 40px; 
     box-shadow: none; 
     position: relative;
-    max-width: 1500px;
+    max-width: 1250px;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -45,17 +51,23 @@
     z-index: 200; 
 }
 
-.carousel-track { 
-    display: flex; 
-    transition: transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94); 
-    gap: 15px; 
+.carousel-track {
+    display: flex;
+    gap: 12px;
     padding: 0 50px;
+    /* Remove existing transition, will be handled by JS */
 }
 
 .carousel-item-custom { 
     flex: 0 0 180px; 
     display: flex; 
     flex-direction: column; 
+}
+
+/* Hide clone items from accessibility */
+.carousel-item-custom.clone {
+    user-select: none;
+    pointer-events: auto; /* Keep clickable */
 }
 
 /* Ensure carousel cards match grid cards - smaller size */

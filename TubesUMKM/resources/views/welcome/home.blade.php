@@ -2,7 +2,6 @@
 @foreach(($sections ?? []) as $sectionKey => $section)
     @if($section['books']->count() > 0)
         <section class="featured-section">
-            <div class="container">
                 <div class="carousel-container-bg">
                     <button class="nav-btn prev" id="prevBtn{{ $loop->index }}"><i class="fas fa-chevron-left"></i></button>
                     <button class="nav-btn next" id="nextBtn{{ $loop->index }}"><i class="fas fa-chevron-right"></i></button>
@@ -40,7 +39,7 @@
         
         {{-- Add spacing between sections like Gramedia --}}
         @if(!$loop->last)
-            <div style="height: 60px;"></div>
+            <div style="height: 20px;"></div>
         @endif
     @endif
 @endforeach

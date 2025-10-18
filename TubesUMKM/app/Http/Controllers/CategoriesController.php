@@ -75,13 +75,64 @@ class CategoriesController extends Controller
     }
     
     /**
-     * Show specific category
+     * Show specific category (called when clicking breadcrumb or category link)
      */
-    public function show(Category $category)
+    public function show($categoryId, Request $request)
     {
-        $books = $category->books()->paginate(12);
+        // Find category by ID only (no slug support)
+        $selectedCategory = Category::findOrFail($categoryId);
+        
+        // Get all categories for sidebar
         $categories = Category::withCount('books')->orderBy('name')->get();
         
-        return view('categories.show', compact('category', 'books', 'categories'));
+        // Initialize books query for this category
+        $booksQuery = Book::with('category')
+            ->where('category_id', $selectedCategory->id);
+        
+        // Apply sort parameter
+        $sort = $request->input('sort', 'name_asc');
+        switch ($sort) {
+            case 'name_asc':
+                $booksQuery->orderBy('name', 'asc');
+                break;
+            case 'name_desc':
+                $booksQuery->orderBy('name', 'desc');
+                break;
+            case 'price_asc':
+                $booksQuery->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $booksQuery->orderBy('price', 'desc');
+                break;
+            default:
+                $booksQuery->orderBy('name', 'asc');
+                break;
+        }
+        
+        // Get books with pagination
+        $books = $booksQuery->paginate(12)->withQueryString();
+        
+        // Get popular categories (categories with most books)
+        $popularCategories = Category::withCount('books')
+            ->orderBy('books_count', 'desc')
+            ->limit(5)
+            ->get();
+        
+        // Get user's wishlist for checking if books are already wishlisted
+        $userWishlist = [];
+        if (Auth::check()) {
+            $userWishlist = Wishlist::where('user_id', Auth::id())
+                                  ->pluck('book_id')
+                                  ->toArray();
+        }
+        
+        // Use the same view as index, but with selectedCategory set
+        return view('categories', compact(
+            'categories', 
+            'books', 
+            'selectedCategory', 
+            'popularCategories',
+            'userWishlist'
+        ));
     }
 }

@@ -4,11 +4,14 @@
         <div class="container mx-auto px-4 py-4">
             <ol class="breadcrumb-list">
                 <li class="breadcrumb-item">
-                    <a href="{{ route('books.index') }}">Home</a>
+                    <a href="{{ route('books.index') }}" class="hover:text-blue-600 transition-colors">Home</a>
                 </li>
                 <li class="breadcrumb-separator">&gt;</li>
                 <li class="breadcrumb-item">
-                    <a href="{{ route('categories.show', $book->category) }}">{{ $book->category->name }}</a>
+                    <a href="{{ route('categories.show', $book->category->id) }}" 
+                       class="hover:text-blue-600 transition-colors">
+                        {{ $book->category->name }}
+                    </a>
                 </li>
                 <li class="breadcrumb-separator">&gt;</li>
                 <li class="breadcrumb-current">{{ $book->name }}</li>

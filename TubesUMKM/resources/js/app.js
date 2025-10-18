@@ -18,14 +18,10 @@ import './book-detail';
 import './checkout';
 import './orders';
 import './profile';
+import './cart'
 
 // Conditional imports
 const currentPath = window.location.pathname;
-
-// Only load cart.js on relevant pages
-if (!currentPath.includes('/profile') && !currentPath.includes('/admin')) {
-    import('./cart');
-}
 
 // Admin scripts (only loaded on admin pages)
 if (window.location.pathname.startsWith('/admin')) {

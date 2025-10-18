@@ -381,51 +381,98 @@ document.addEventListener('click', function(e) {
   }
 }); // Use normal bubbling phase
 
-// Additional initialization for other page elements
 document.addEventListener('DOMContentLoaded', function() {
-  // Only run on home page
-  const isHomePage = window.location.pathname === '/' || document.querySelector('.carousel-section');
-  
-  if (!isHomePage) {
-    console.log('Carousel: Not on home page, skipping initialization');
-    return;
-  }
-  
-  // Initial setup of button handlers for non-carousel elements
-  setupButtonHandlers();
+    const carousels = document.querySelectorAll('.custom-carousel');
     
-  // View More button
-  const viewMoreBtn = document.querySelector('.view-more-btn');
-  if (viewMoreBtn) {
-    viewMoreBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      alert('Redirecting to full catalog... (Demo)');
-    });
-  }
-    
-  // Legacy Buy Now buttons ONLY in carousel/featured sections
-  const carouselSection = document.querySelector('.carousel-section');
-  const featuredSection = document.querySelector('.featured-section');
-  
-  if (carouselSection) {
-    carouselSection.querySelectorAll('.btn-primary').forEach(btn => {
-      if (!btn.classList.contains('btn-buy-now')) {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          alert('Buku ditambahkan ke cart! (Demo)');
+    carousels.forEach(carousel => {
+        const track = carousel.querySelector('.carousel-track');
+        const slides = Array.from(track.children);
+        const prevBtn = carousel.querySelector('.nav-btn.prev');
+        const nextBtn = carousel.querySelector('.nav-btn.next');
+        
+        if (!track || slides.length === 0) return;
+        
+        // Configuration
+        const slideWidth = slides[0].offsetWidth;
+        const slideGap = 12; // Sesuai dengan gap di CSS
+        const slideMove = slideWidth + slideGap;
+        
+        let currentIndex = 0;
+        let isTransitioning = false;
+        
+        // Clone slides untuk infinite loop
+        const cloneCount = 5; // Clone 5 items di awal dan akhir
+        
+        // Clone last items dan prepend
+        for (let i = slides.length - cloneCount; i < slides.length; i++) {
+            const clone = slides[i].cloneNode(true);
+            clone.classList.add('clone');
+            track.insertBefore(clone, track.firstChild);
+        }
+        
+        // Clone first items dan append
+        for (let i = 0; i < cloneCount; i++) {
+            const clone = slides[i].cloneNode(true);
+            clone.classList.add('clone');
+            track.appendChild(clone);
+        }
+        
+        // Update slides array dengan clones
+        const allSlides = Array.from(track.children);
+        const totalSlides = allSlides.length;
+        
+        // Set initial position (skip cloned items)
+        currentIndex = cloneCount;
+        track.style.transform = `translateX(-${currentIndex * slideMove}px)`;
+        
+        // Move carousel function
+        function moveCarousel(direction) {
+            if (isTransitioning) return;
+            
+            isTransitioning = true;
+            currentIndex += direction;
+            
+            track.style.transition = 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)';
+            track.style.transform = `translateX(-${currentIndex * slideMove}px)`;
+            
+            // Handle infinite loop
+            track.addEventListener('transitionend', handleTransitionEnd);
+        }
+        
+        function handleTransitionEnd() {
+            track.removeEventListener('transitionend', handleTransitionEnd);
+            
+            // Reset position jika sudah di clone
+            if (currentIndex <= 0) {
+                // Jump to real last item
+                track.style.transition = 'none';
+                currentIndex = slides.length;
+                track.style.transform = `translateX(-${currentIndex * slideMove}px)`;
+            } else if (currentIndex >= slides.length + cloneCount) {
+                // Jump to real first item
+                track.style.transition = 'none';
+                currentIndex = cloneCount;
+                track.style.transform = `translateX(-${currentIndex * slideMove}px)`;
+            }
+            
+            isTransitioning = false;
+        }
+        
+        // Button events
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => moveCarousel(-1));
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => moveCarousel(1));
+        }
+        
+        // Auto-adjust on window resize
+        window.addEventListener('resize', () => {
+            const newSlideWidth = allSlides[0].offsetWidth;
+            const newSlideMove = newSlideWidth + slideGap;
+            track.style.transition = 'none';
+            track.style.transform = `translateX(-${currentIndex * newSlideMove}px)`;
         });
-      }
     });
-  }
-  
-  if (featuredSection) {
-    featuredSection.querySelectorAll('.btn-primary').forEach(btn => {
-      if (!btn.classList.contains('btn-buy-now')) {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          alert('Buku ditambahkan ke cart! (Demo)');
-        });
-      }
-    });
-  }
 });
