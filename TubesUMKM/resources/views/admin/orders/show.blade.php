@@ -41,11 +41,11 @@
                             <p class="text-xs text-gray-600 mt-1">{{ $item->book->author }}</p>
                             <div class="flex items-center justify-between mt-2">
                                 <div class="text-sm text-gray-700">
-                                    <span class="font-medium">{{ $item->quantity }}x</span>
+                                    <span class="font-medium">{{ $item->qty }}x</span>
                                     <span class="ml-2">@ Rp {{ number_format($item->price, 0, ',', '.') }}</span>
                                 </div>
                                 <div class="text-sm font-semibold text-gray-900">
-                                    Rp {{ number_format($item->quantity * $item->price, 0, ',', '.') }}
+                                    Rp {{ number_format($item->qty * $item->price, 0, ',', '.') }}
                                 </div>
                             </div>
                         </div>
@@ -125,6 +125,21 @@
                 </div>
 
                 <!-- Update Status Form -->
+                @php
+                    // Define allowed next statuses based on current status (Admin cannot set 'batal')
+                    $allowedNextStatuses = match($order->status) {
+                        'pending' => ['pending', 'diproses'],
+                        'diproses' => ['diproses', 'dikirim'],
+                        'dikirim' => ['dikirim', 'selesai'],
+                        'selesai' => ['selesai'], // cannot change
+                        'batal' => ['batal'], // cannot change
+                        default => ['pending', 'diproses', 'dikirim', 'selesai']
+                    };
+                    
+                    $canChangeStatus = !in_array($order->status, ['selesai', 'batal']);
+                @endphp
+
+                @if($canChangeStatus)
                 <form action="{{ route('admin.orders.updateStatus', $order) }}" method="POST">
                     @csrf
                     @method('PATCH')
@@ -136,9 +151,11 @@
                             id="status" 
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-3">
                         @foreach(\App\Models\Order::getStatuses() as $key => $label)
-                            <option value="{{ $key }}" {{ $order->status == $key ? 'selected' : '' }}>
-                                {{ $label }}
-                            </option>
+                            @if(in_array($key, $allowedNextStatuses))
+                                <option value="{{ $key }}" {{ $order->status == $key ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endif
                         @endforeach
                     </select>
 
@@ -147,6 +164,13 @@
                         <i class="fas fa-save mr-2"></i>Update Status
                     </button>
                 </form>
+                @else
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+                    <p class="text-sm text-gray-600">
+                        <i class="fas fa-lock mr-2"></i>Status tidak dapat diubah lagi
+                    </p>
+                </div>
+                @endif
 
                 <!-- Status Guide -->
                 <div class="mt-4 pt-4 border-t border-gray-200">
@@ -156,8 +180,13 @@
                         <li><span class="font-semibold text-blue-600">Diproses:</span> Sedang dikemas</li>
                         <li><span class="font-semibold text-purple-600">Dikirim:</span> Dalam pengiriman</li>
                         <li><span class="font-semibold text-green-600">Selesai:</span> Pesanan diterima</li>
-                        <li><span class="font-semibold text-red-600">Dibatalkan:</span> Pesanan batal</li>
                     </ul>
+                    <p class="text-xs text-gray-500 italic mt-2">
+                        * Status harus berurutan dan tidak bisa mundur
+                    </p>
+                    <p class="text-xs text-orange-600 mt-1">
+                        * Hanya pelanggan yang dapat membatalkan pesanan
+                    </p>
                 </div>
             </div>
 

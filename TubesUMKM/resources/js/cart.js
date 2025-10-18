@@ -12,19 +12,28 @@ class CartManager {
     init() {
         // Only initialize if we're on a cart-related page
         const isCartPage = window.location.pathname.includes('/cart') || 
-                          document.querySelector('.cart-container');
+                          document.querySelector('.cart-page');
+        
+        console.log('[CartManager] Init called');
+        console.log('[CartManager] Current pathname:', window.location.pathname);
+        console.log('[CartManager] Cart page element found:', !!document.querySelector('.cart-page'));
+        console.log('[CartManager] isCartPage:', isCartPage);
         
         if (isCartPage) {
+            console.log('[CartManager] Binding events...');
             this.bindEvents();
             this.updateCartCount();
             this.initializeMinusButtons();
         } else {
+            console.log('[CartManager] Not cart page, only updating count');
             // Only update cart count on other pages
             this.updateCartCount();
         }
     }
 
     bindEvents() {
+        console.log('[CartManager] bindEvents() called - attaching event listeners');
+        
         // Add to cart buttons (only handle specific cart page buttons to avoid conflicts)
         document.addEventListener('click', (e) => {
             // Only handle cart page specific buttons, let book-card.js handle product page buttons
@@ -68,17 +77,25 @@ class CartManager {
 
         // Delete selected items
         document.addEventListener('click', (e) => {
-            if (e.target.matches('#delete-selected')) {
+            const deleteBtn = e.target.closest('#delete-selected, .delete-selected-btn');
+            if (deleteBtn) {
+                console.log('[CartManager] Delete selected button clicked');
+                e.preventDefault();
                 this.handleDeleteSelected();
             }
         });
 
         // Checkout button
         document.addEventListener('click', (e) => {
-            if (e.target.matches('#checkout-btn')) {
+            const checkoutBtn = e.target.closest('#checkout-btn, .checkout-btn');
+            if (checkoutBtn) {
+                console.log('[CartManager] Checkout button clicked');
+                e.preventDefault();
                 this.handleCheckout();
             }
         });
+        
+        console.log('[CartManager] All event listeners attached successfully');
     }
 
     async handleAddToCart(button) {
@@ -470,18 +487,26 @@ class CartManager {
 
 // Initialize cart manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('[CartManager] DOMContentLoaded fired');
+    console.log('[CartManager] Current pathname:', window.location.pathname);
+    
     // Only initialize CartManager on pages that actually need it
     // Exclude profile, admin, checkout pages
     const isProfilePage = window.location.pathname.includes('/profile');
     const isAdminPage = window.location.pathname.includes('/admin');
     const isCheckoutPage = window.location.pathname.includes('/checkout');
     
+    console.log('[CartManager] isProfilePage:', isProfilePage);
+    console.log('[CartManager] isAdminPage:', isAdminPage);
+    console.log('[CartManager] isCheckoutPage:', isCheckoutPage);
+    
     // Skip initialization on certain pages
     if (isProfilePage || isAdminPage || isCheckoutPage) {
-        console.log('CartManager: Skipping initialization on this page');
+        console.log('[CartManager] Skipping initialization on this page');
         return;
     }
     
+    console.log('[CartManager] Creating new CartManager instance...');
     new CartManager();
 });
 

@@ -197,6 +197,38 @@ class AdminController extends Controller
             'status' => "required|in:$allowed",
         ]);
 
+        $newStatus = $validated['status'];
+        $currentStatus = $order->status;
+
+        // Define status hierarchy (order level)
+        $statusHierarchy = [
+            'pending' => 1,
+            'diproses' => 2,
+            'dikirim' => 3,
+            'selesai' => 4,
+            'batal' => 0, // special case, only user can set this
+        ];
+
+        // Validation: Status must be sequential (cannot go backward)
+        
+        // Case 1: Cannot change from 'selesai' or 'batal'
+        if (in_array($currentStatus, ['selesai', 'batal'])) {
+            return redirect()->back()
+                ->with('error', "Pesanan dengan status '{$order->status_label}' tidak dapat diubah lagi.");
+        }
+
+        // Case 2: Admin cannot set status to 'batal' - only user can cancel
+        if ($newStatus === 'batal') {
+            return redirect()->back()
+                ->with('error', "Hanya pelanggan yang dapat membatalkan pesanan. Admin hanya dapat memproses pesanan ke depan.");
+        }
+
+        // Case 3: Cannot go backward (e.g., dikirim -> diproses)
+        if ($statusHierarchy[$newStatus] <= $statusHierarchy[$currentStatus]) {
+            return redirect()->back()
+                ->with('error', "Status pesanan tidak dapat mundur. Status saat ini: '{$order->status_label}'.");
+        }
+
         $order->update($validated);
 
         return redirect()->back()
