@@ -21,49 +21,144 @@
         </div>
     @endif
 
-    <!-- Filters & Search -->
-    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
-        <form method="GET" action="{{ route('admin.orders.index') }}" class="flex flex-col md:flex-row gap-4">
-            <!-- Search -->
+    <!-- Search Bar -->
+    <div class="mb-4">
+        <form method="GET" action="{{ route('admin.orders.index') }}" class="flex gap-3">
+            <input type="hidden" name="status" value="{{ request('status') }}">
+            
             <div class="flex-1">
-                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Cari Pesanan</label>
                 <input type="text" 
                        name="search" 
                        id="search" 
                        value="{{ request('search') }}"
-                       placeholder="ID pesanan, nama, atau email pelanggan..."
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       placeholder="🔍 Cari ID pesanan, nama, atau email pelanggan..."
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
             </div>
 
-            <!-- Status Filter -->
-            <div class="md:w-48">
-                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select name="status" 
-                        id="status" 
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <option value="">Semua Status</option>
-                    @foreach($statuses as $key => $label)
-                        <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>
-                            {{ $label }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Buttons -->
-            <div class="flex items-end gap-2">
-                <button type="submit" 
-                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition">
-                    <i class="fas fa-search mr-2"></i>Filter
-                </button>
-                @if(request('search') || request('status'))
-                    <a href="{{ route('admin.orders.index') }}" 
-                       class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-medium transition">
-                        <i class="fas fa-times mr-2"></i>Reset
-                    </a>
-                @endif
-            </div>
+            <button type="submit" 
+                    class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition text-sm">
+                <i class="fas fa-search mr-2"></i>Cari
+            </button>
+            
+            @if(request('search'))
+                <a href="{{ route('admin.orders.index', ['status' => request('status')]) }}" 
+                   class="px-6 py-2.5 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-medium transition text-sm">
+                    <i class="fas fa-times mr-2"></i>Reset
+                </a>
+            @endif
         </form>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="bg-white rounded-lg shadow-md mb-6 overflow-hidden">
+        <div class="flex border-b border-gray-200">
+            @php
+                $currentStatus = request('status', '');
+                $statusCounts = [
+                    '' => \App\Models\Order::count(),
+                    'pending' => \App\Models\Order::where('status', 'pending')->count(),
+                    'diproses' => \App\Models\Order::where('status', 'diproses')->count(),
+                    'dikirim' => \App\Models\Order::where('status', 'dikirim')->count(),
+                    'selesai' => \App\Models\Order::where('status', 'selesai')->count(),
+                    'batal' => \App\Models\Order::where('status', 'batal')->count(),
+                ];
+            @endphp
+            
+            <!-- Tab: Semua -->
+            <a href="{{ route('admin.orders.index') }}" 
+               class="flex-1 px-6 py-4 text-center text-sm font-medium border-b-2 transition-colors
+                      {{ $currentStatus === '' 
+                         ? 'border-blue-500 text-blue-600 bg-blue-50' 
+                         : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50' }}">
+                <div class="flex items-center justify-center gap-2">
+                    <span>Semua</span>
+                    <span class="px-2.5 py-0.5 text-xs rounded-full font-semibold
+                                 {{ $currentStatus === '' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' }}">
+                        {{ $statusCounts[''] }}
+                    </span>
+                </div>
+            </a>
+
+            <!-- Tab: Menunggu -->
+            <a href="{{ route('admin.orders.index', ['status' => 'pending']) }}" 
+               class="flex-1 px-6 py-4 text-center text-sm font-medium border-b-2 transition-colors
+                      {{ $currentStatus === 'pending' 
+                         ? 'border-yellow-500 text-yellow-600 bg-yellow-50' 
+                         : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50' }}">
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fas fa-clock"></i>
+                    <span>Menunggu</span>
+                    <span class="px-2.5 py-0.5 text-xs rounded-full font-semibold
+                                 {{ $currentStatus === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600' }}">
+                        {{ $statusCounts['pending'] }}
+                    </span>
+                </div>
+            </a>
+
+            <!-- Tab: Diproses -->
+            <a href="{{ route('admin.orders.index', ['status' => 'diproses']) }}" 
+               class="flex-1 px-6 py-4 text-center text-sm font-medium border-b-2 transition-colors
+                      {{ $currentStatus === 'diproses' 
+                         ? 'border-blue-500 text-blue-600 bg-blue-50' 
+                         : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50' }}">
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fas fa-box"></i>
+                    <span>Diproses</span>
+                    <span class="px-2.5 py-0.5 text-xs rounded-full font-semibold
+                                 {{ $currentStatus === 'diproses' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' }}">
+                        {{ $statusCounts['diproses'] }}
+                    </span>
+                </div>
+            </a>
+
+            <!-- Tab: Dikirim -->
+            <a href="{{ route('admin.orders.index', ['status' => 'dikirim']) }}" 
+               class="flex-1 px-6 py-4 text-center text-sm font-medium border-b-2 transition-colors
+                      {{ $currentStatus === 'dikirim' 
+                         ? 'border-purple-500 text-purple-600 bg-purple-50' 
+                         : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50' }}">
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fas fa-shipping-fast"></i>
+                    <span>Dikirim</span>
+                    <span class="px-2.5 py-0.5 text-xs rounded-full font-semibold
+                                 {{ $currentStatus === 'dikirim' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600' }}">
+                        {{ $statusCounts['dikirim'] }}
+                    </span>
+                </div>
+            </a>
+
+            <!-- Tab: Selesai -->
+            <a href="{{ route('admin.orders.index', ['status' => 'selesai']) }}" 
+               class="flex-1 px-6 py-4 text-center text-sm font-medium border-b-2 transition-colors
+                      {{ $currentStatus === 'selesai' 
+                         ? 'border-green-500 text-green-600 bg-green-50' 
+                         : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50' }}">
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Selesai</span>
+                    <span class="px-2.5 py-0.5 text-xs rounded-full font-semibold
+                                 {{ $currentStatus === 'selesai' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' }}">
+                        {{ $statusCounts['selesai'] }}
+                    </span>
+                </div>
+            </a>
+
+            <!-- Tab: Dibatalkan -->
+            <a href="{{ route('admin.orders.index', ['status' => 'batal']) }}" 
+               class="flex-1 px-6 py-4 text-center text-sm font-medium border-b-2 transition-colors
+                      {{ $currentStatus === 'batal' 
+                         ? 'border-red-500 text-red-600 bg-red-50' 
+                         : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50' }}">
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fas fa-times-circle"></i>
+                    <span>Dibatalkan</span>
+                    <span class="px-2.5 py-0.5 text-xs rounded-full font-semibold
+                                 {{ $currentStatus === 'batal' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600' }}">
+                        {{ $statusCounts['batal'] }}
+                    </span>
+                </div>
+            </a>
+        </div>
     </div>
 
     <!-- Orders Table -->
@@ -149,27 +244,6 @@
             {{ $orders->appends(request()->query())->links() }}
         </div>
         @endif
-    </div>
-
-    <!-- Summary Stats -->
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-5 gap-4">
-        @foreach($statuses as $key => $label)
-            @php
-                $count = \App\Models\Order::where('status', $key)->count();
-                $statusColors = [
-                    'pending' => 'border-yellow-400 bg-yellow-50',
-                    'diproses' => 'border-blue-400 bg-blue-50',
-                    'dikirim' => 'border-purple-400 bg-purple-50',
-                    'selesai' => 'border-green-400 bg-green-50',
-                    'batal' => 'border-red-400 bg-red-50',
-                ];
-                $color = $statusColors[$key] ?? 'border-gray-400 bg-gray-50';
-            @endphp
-            <div class="border-l-4 {{ $color }} p-4 rounded">
-                <p class="text-xs font-medium text-gray-600 uppercase">{{ $label }}</p>
-                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $count }}</p>
-            </div>
-        @endforeach
     </div>
 </div>
 @endsection

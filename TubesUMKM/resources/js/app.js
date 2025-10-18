@@ -19,10 +19,8 @@ import './book-detail';
 import './checkout';
 import './orders';
 import './profile';
-import './cart'
+import './cart';
 
-// Conditional imports
-const currentPath = window.location.pathname;
 
 // Admin scripts (only loaded on admin pages)
 if (window.location.pathname.startsWith('/admin')) {
