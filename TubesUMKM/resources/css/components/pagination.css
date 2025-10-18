@@ -1,91 +1,329 @@
-/* Custom Pagination Styles */
+.pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 2rem 0;
+}
+
+.pagination-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    padding: 1.5rem;
+    background-color: white;
+    border-top: 1px solid #e5e7eb;
+}
+
 .custom-pagination {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 1.5rem;
+    width: 100%;
 }
 
 .pagination-info {
     color: #6b7280;
     font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
 }
 
+.pagination-info strong {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+/* Pagination List */
+.pagination,
 .pagination-list {
     display: flex;
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: 0.25rem;
-}
-
-.page-item {
-    display: flex;
-}
-
-.page-link {
-    display: flex;
+    gap: 0.5rem;
     align-items: center;
-    gap: 0.25rem;
+}
+
+/* Page Item */
+.page-item {
+    display: inline-flex;
+    margin: 0;
+}
+
+/* Page Link */
+.page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 40px;
+    height: 40px;
     padding: 0.5rem 0.75rem;
     color: #6b7280;
     text-decoration: none;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    transition: all 0.3s ease;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
     font-size: 0.875rem;
-    min-width: 40px;
-    justify-content: center;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    user-select: none;
 }
 
 .page-link:hover {
-    color: #667eea;
-    border-color: #667eea;
+    color: #b2bef0;
     background-color: #f8fafc;
+    border-color: #667eea;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+.page-link:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 .page-item.active .page-link {
-    background-color: #667eea;
+    background: #667eea;
     border-color: #667eea;
     color: white;
+    cursor: default;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    font-weight: 600;
 }
 
+.page-item.active .page-link:hover {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Disabled Page */
 .page-item.disabled .page-link {
-    color: #9ca3af;
+    color: #d1d5db;
+    background-color: #f9fafb;
     border-color: #e5e7eb;
     cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.6;
 }
 
 .page-item.disabled .page-link:hover {
-    color: #9ca3af;
-    border-color: #e5e7eb;
-    background-color: transparent;
+    transform: none;
+    box-shadow: none;
 }
 
-.page-dots {
+/* Ellipsis (Dots) */
+.page-dots,
+.page-item.disabled:not(:first-child):not(:last-child) .page-link {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    color: #9ca3af !important;
     cursor: default !important;
+    min-width: auto !important;
+    padding: 0.5rem 0.25rem !important;
+    pointer-events: none !important;
 }
 
-@media (max-width: 640px) {
+.page-dots:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Previous/Next Buttons */
+.page-item:first-child .page-link,
+.page-item:last-child .page-link {
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    gap: 0.375rem;
+}
+
+.page-link i {
+    font-size: 0.75rem;
+}
+
+/* Icon in Previous Button */
+.page-item:first-child .page-link i {
+    margin-right: 0.25rem;
+}
+
+/* Icon in Next Button */
+.page-item:last-child .page-link i {
+    margin-left: 0.25rem;
+}
+
+/* First and Last Page Highlight */
+.page-item:nth-child(2) .page-link,
+.page-item:nth-last-child(2) .page-link {
+    font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+    .custom-pagination {
+        gap: 1rem;
+    }
+    
+    .pagination,
+    .pagination-list {
+        gap: 0.375rem;
+    }
+    
+    .page-link {
+        min-width: 38px;
+        height: 38px;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.8125rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .pagination-container {
+        padding: 1rem;
+    }
+    
     .custom-pagination {
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
+        gap: 1rem;
     }
     
     .pagination-info {
         text-align: center;
         order: 2;
-        margin-top: 0.5rem;
+        font-size: 0.8125rem;
     }
     
-    .pagination-list {
-        justify-content: center;
+    .pagination-wrapper {
         order: 1;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .pagination,
+    .pagination-list {
+        gap: 0.25rem;
+        flex-wrap: wrap;
+        justify-content: center;
     }
     
     .page-link {
-        font-size: 0.75rem;
+        min-width: 36px;
+        height: 36px;
         padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .page-link .d-none,
+    .page-link span:not(.page-number) {
+        display: none !important;
+    }
+    
+    .page-item:first-child .page-link,
+    .page-item:last-child .page-link {
+        padding: 0.375rem 0.75rem;
+        min-width: 36px;
+    }
+    
+    .page-link i {
+        margin: 0 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-container {
+        padding: 0.75rem;
+    }
+    
+    .pagination,
+    .pagination-list {
+        gap: 0.125rem;
+    }
+    
+    .page-link {
+        min-width: 32px;
+        height: 32px;
+        padding: 0.25rem 0.375rem;
+        font-size: 0.7rem;
+        border-radius: 6px;
+    }
+    
+    .page-item:first-child .page-link,
+    .page-item:last-child .page-link {
+        padding: 0.25rem 0.5rem;
+        min-width: 32px;
+    }
+    
+    .pagination-info {
+        font-size: 0.75rem;
+    }
+}
+
+/* ===================================
+   Animation & Effects
+   =================================== */
+
+/* Smooth scale animation */
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.page-item {
+    animation: scaleIn 0.3s ease-out;
+}
+
+.page-link:active {
+    transform: scale(0.95);
+}
+
+
+/* ===================================
+   Accessibility
+   =================================== */
+
+@media (prefers-contrast: high) {
+    .page-link {
+        border-width: 2px;
+    }
+    
+    .page-item.active .page-link {
+        border-width: 2px;
+        border-color: #000;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-link,
+    .page-item {
+        transition: none;
+        animation: none;
+    }
+    
+    .page-link:hover {
+        transform: none;
+    }
+}
+
+.page-link:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+@media print {
+    .pagination-container,
+    .pagination-wrapper,
+    .custom-pagination {
+        display: none !important;
     }
 }
