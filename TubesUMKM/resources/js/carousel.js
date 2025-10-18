@@ -71,7 +71,7 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
   };
   
   const originalItems = Array.from(track.querySelectorAll('.carousel-item-custom'));
-  const itemWidth = 240; // 220px + 20px gap
+  const itemWidth = 215; // 200px + 15px gap
   const totalItems = originalItems.length;
   
   // Clone items for infinite loop - original logic

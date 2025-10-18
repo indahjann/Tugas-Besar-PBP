@@ -38,9 +38,9 @@
             </div>
         </section>
         
-        {{-- Add spacing between sections --}}
+        {{-- Add spacing between sections like Gramedia --}}
         @if(!$loop->last)
-            <div style="height: 40px;"></div>
+            <div style="height: 60px;"></div>
         @endif
     @endif
 @endforeach
