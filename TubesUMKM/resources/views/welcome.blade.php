@@ -6,8 +6,7 @@
 
 @section('content')
     @includeWhen(true, 'welcome.promo')
-    @includeWhen(true, 'welcome.featured')
-    @includeWhen(true, 'welcome.categories')
+    @includeWhen(true, 'welcome.home')
 @endsection
 
 @push('scripts')

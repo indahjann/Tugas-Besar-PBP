@@ -12,11 +12,6 @@ class BookController extends Controller
 {
     public function index()
     {
-        $books = Book::where('is_active', true)
-                ->with('category')
-                ->orderByDesc('created_at')
-                ->paginate(12);
-        
         // Get user's wishlist for checking if books are already wishlisted
         $userWishlist = [];
         if (Auth::check()) {
@@ -25,15 +20,75 @@ class BookController extends Controller
                                   ->toArray();
         }
         
-        // Prepare small grouped lists for the homepage categories section
-        // keys expected by the welcome partial: 'fiction', 'manga', 'teen'
-        $categories = [
-            'fiction' => Book::where('is_active', true)->where('category_id', 1)->orderByDesc('created_at')->take(4)->get(),
-            'manga' => Book::where('is_active', true)->where('category_id', 3)->orderByDesc('created_at')->take(4)->get(),
-            'teen' => Book::where('is_active', true)->where('category_id', 4)->orderByDesc('created_at')->take(4)->get(),
+        // Prepare multiple themed sections for homepage
+        $sections = [
+            // Buku Terbaru (Recent Books)
+            'recent' => [
+                'title' => 'Buku Terbaru',
+                'books' => Book::where('is_active', true)
+                    ->with('category')
+                    ->orderByDesc('created_at')
+                    ->take(12)
+                    ->get()
+            ],
+            
+            // Bestsellers (simulasi berdasarkan stock rendah = banyak terjual)
+            'bestsellers' => [
+                'title' => 'Bestsellers',
+                'books' => Book::where('is_active', true)
+                    ->with('category')
+                    ->where('stock', '<', 25)
+                    ->orderBy('stock', 'asc')
+                    ->take(12)
+                    ->get()
+            ],
+            
+            // Fiction Books
+            'fiction' => [
+                'title' => 'Fiction',
+                'books' => Book::where('is_active', true)
+                    ->with('category')
+                    ->where('category_id', 1)
+                    ->orderByDesc('created_at')
+                    ->take(12)
+                    ->get()
+            ],
+            
+            // Manga & Comics  
+            'manga' => [
+                'title' => 'Manga & Comics',
+                'books' => Book::where('is_active', true)
+                    ->with('category')
+                    ->where('category_id', 3)
+                    ->orderByDesc('created_at')
+                    ->take(12)
+                    ->get()
+            ],
+            
+            // Self-Help
+            'selfhelp' => [
+                'title' => 'Self-Help',
+                'books' => Book::where('is_active', true)
+                    ->with('category')
+                    ->where('category_id', 5)
+                    ->orderByDesc('created_at')
+                    ->take(12)
+                    ->get()
+            ],
+            
+            // Technology Books
+            'technology' => [
+                'title' => 'Technology',
+                'books' => Book::where('is_active', true)
+                    ->with('category')
+                    ->where('category_id', 6)
+                    ->orderByDesc('created_at')
+                    ->take(12)
+                    ->get()
+            ]
         ];
 
-        return view('welcome', compact('books', 'userWishlist', 'categories'));
+        return view('welcome', compact('sections', 'userWishlist'));
     }
 
     /**

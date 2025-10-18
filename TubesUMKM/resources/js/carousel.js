@@ -1,44 +1,43 @@
-// Instance carousel global
-let carouselInstance = null;
+// Multiple Carousel Handler for Homepage with Original Logic
+let carouselInstances = [];
 
-function initializeCarousel() {
-  const carousel = document.getElementById('bookCarousel');
-  const track = document.getElementById('carouselTrack');
-  const prevBtn = document.getElementById('prevBtn');
-  const nextBtn = document.getElementById('nextBtn');
+function initializeCarousels() {
+  // Clean up existing instances
+  carouselInstances.forEach(instance => instance.destroy());
+  carouselInstances = [];
+  
+  // Find all carousels on the page
+  const carousels = document.querySelectorAll('.custom-carousel');
+  
+  carousels.forEach((carousel, index) => {
+    const track = carousel.querySelector('.carousel-track');
+    const prevBtn = document.getElementById(`prevBtn${index}`);
+    const nextBtn = document.getElementById(`nextBtn${index}`);
     
-  if (!carousel || !track || !prevBtn || !nextBtn) {
-    return;
-  }
-  
-  // Cek apakah carousel sudah jalan
-  if (carouselInstance && 
-      carouselInstance.carousel === carousel && 
-      carouselInstance.autoSlideInterval) {
-    return;
-  }
-  
-  // Bersihkan instance lama kalau ada
-  if (carouselInstance) {
-    carouselInstance.destroy();
-  }
-  
-  // Buat instance carousel
-  carouselInstance = {
+    if (!carousel || !track || !prevBtn || !nextBtn) return;
+    
+    initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index);
+  });
+}
+
+function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
+  // Create instance object
+  const instance = {
     carousel,
     track,
     prevBtn,
     nextBtn,
+    index,
     autoSlideInterval: null,
     autoSlideResumeTimeout: null,
     carouselHoverTimeout: null,
     hoverTimeout: null,
     resizeTimeout: null,
     eventListeners: [],
+    safetyCheck: null,
     
-    // Method untuk cleanup - ENHANCED
     destroy() {
-      // Hapus semua timer
+      // Clear all timers
       clearInterval(this.autoSlideInterval);
       clearInterval(this.safetyCheck);
       clearTimeout(this.autoSlideResumeTimeout);
@@ -50,7 +49,7 @@ function initializeCarousel() {
       this.autoSlideInterval = null;
       this.safetyCheck = null;
       
-      // Hapus event listeners
+      // Remove event listeners
       this.eventListeners.forEach(({ element, event, handler }) => {
         if (element && element.removeEventListener) {
           element.removeEventListener(event, handler);
@@ -65,47 +64,44 @@ function initializeCarousel() {
       }
     },
     
-    // Helper untuk tracking event listeners
     addEventListener(element, event, handler) {
       element.addEventListener(event, handler);
       this.eventListeners.push({ element, event, handler });
     }
   };
-    
+  
   const originalItems = Array.from(track.querySelectorAll('.carousel-item-custom'));
-  const itemWidth = 240; // 220px + 20px jarak
+  const itemWidth = 240; // 220px + 20px gap
   const totalItems = originalItems.length;
-    
-  // Clone item untuk infinite loop
-  // Clone beberapa item pertama ke akhir
+  
+  // Clone items for infinite loop - original logic
   const clonesToAppend = Math.min(4, totalItems);
   for (let i = 0; i < clonesToAppend; i++) {
     const clone = originalItems[i].cloneNode(true);
     clone.classList.add('carousel-clone');
     track.appendChild(clone);
   }
-    
-  // Clone beberapa item terakhir ke awal
+  
   const clonesToPrepend = Math.min(4, totalItems);
   for (let i = clonesToPrepend - 1; i >= 0; i--) {
     const clone = originalItems[totalItems - 1 - i].cloneNode(true);
     clone.classList.add('carousel-clone');
     track.insertBefore(clone, track.firstChild);
   }
-    
-  // Update array items termasuk clones
+  
+  // Update array items including clones
   const allItems = Array.from(track.querySelectorAll('.carousel-item-custom'));
   const startIndex = clonesToPrepend;
   let currentIndex = startIndex;
-    
-  // Set posisi awal (mulai dari item asli pertama)
+  
+  // Set initial position (start from first real item)
   let currentTranslate = startIndex * itemWidth;
   track.style.transform = `translateX(-${currentTranslate}px)`;
-    
+  
   let isTransitioning = false;
   let lastSlideTime = 0;
-  const slideThrottle = 300; // 300ms biar lebih responsif
-    
+  const slideThrottle = 300;
+  
   function updateCarousel(animate = true) {
     if (animate) {
       track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
@@ -113,94 +109,85 @@ function initializeCarousel() {
       track.style.transition = 'none';
     }
     track.style.transform = `translateX(-${currentTranslate}px)`;
-        
-    // Aktifkan lagi transisi setelah sebentar
+    
+    // Re-enable transition after a moment
     if (!animate) {
       setTimeout(() => {
         track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
       }, 50);
     }
   }
-    
+  
   function nextSlide() {
     const now = Date.now();
-    // Simple debounce to prevent rapid sliding
     if (isTransitioning || (now - lastSlideTime) < slideThrottle) {
       return;
     }
-        
+    
     lastSlideTime = now;
     isTransitioning = true;
     currentIndex++;
     currentTranslate += itemWidth;
-        
+    
     updateCarousel(true);
-        
-    // Cek apakah perlu loop balik
+    
+    // Check if we need to loop back
     setTimeout(() => {
       if (currentIndex >= totalItems + startIndex) {
-        // Lagi di clone terakhir, balik ke awal
+        // At last clone, jump to beginning
         currentIndex = startIndex;
         currentTranslate = startIndex * itemWidth;
         updateCarousel(false);
       }
       isTransitioning = false;
-    }, 650); // Slightly longer than transition duration for safety
+    }, 650);
   }
-    
+  
   function prevSlide() {
     const now = Date.now();
-    // Simple debounce to prevent rapid sliding
     if (isTransitioning || (now - lastSlideTime) < slideThrottle) {
       return;
     }
-        
+    
     lastSlideTime = now;
     isTransitioning = true;
     currentIndex--;
     currentTranslate -= itemWidth;
-        
+    
     updateCarousel(true);
-        
+    
     // Check if we need to loop forward
     setTimeout(() => {
       if (currentIndex < startIndex) {
-        // We're at a clone at the beginning, jump to real end
+        // At first clone, jump to real end
         currentIndex = totalItems + startIndex - 1;
         currentTranslate = currentIndex * itemWidth;
         updateCarousel(false);
       }
       isTransitioning = false;
-    }, 650); // Slightly longer than transition duration for safety
+    }, 650);
   }
-    
+  
   function startAutoSlide() {
-    if (carouselInstance.autoSlideInterval) {
-      clearInterval(carouselInstance.autoSlideInterval);
+    if (instance.autoSlideInterval) {
+      clearInterval(instance.autoSlideInterval);
     }
-    carouselInstance.autoSlideInterval = setInterval(nextSlide, 6000);
+    instance.autoSlideInterval = setInterval(nextSlide, 6000);
   }
-    
+  
   function stopAutoSlide() {
-    if (carouselInstance.autoSlideInterval) {
-      clearInterval(carouselInstance.autoSlideInterval);
-      carouselInstance.autoSlideInterval = null;
+    if (instance.autoSlideInterval) {
+      clearInterval(instance.autoSlideInterval);
+      instance.autoSlideInterval = null;
     }
   }
-    
-  // Event listeners with improved handling
+  
+  // Event listeners with improved handling from original code
   function handleManualSlide(slideFunction) {
-    // Clear any pending auto-slide resume
-    clearTimeout(carouselInstance.autoSlideResumeTimeout);
-    
-    // Stop auto-slide immediately
+    clearTimeout(instance.autoSlideResumeTimeout);
     stopAutoSlide();
-    
-    // Execute slide function
     slideFunction();
-    
-    // Resume auto-slide after delay
-    carouselInstance.autoSlideResumeTimeout = setTimeout(() => {
+    instance.autoSlideResumeTimeout = setTimeout(() => {
       startAutoSlide();
     }, 8000);
   }
@@ -217,28 +204,10 @@ function initializeCarousel() {
     handleManualSlide(prevSlide);
   };
   
-  carouselInstance.addEventListener(nextBtn, 'click', nextClickHandler);
-  carouselInstance.addEventListener(prevBtn, 'click', prevClickHandler);
+  instance.addEventListener(nextBtn, 'click', nextClickHandler);
+  instance.addEventListener(prevBtn, 'click', prevClickHandler);
   
-  // Carousel container hover handling
-  const carouselMouseEnterHandler = function() {
-    clearTimeout(carouselInstance.hoverTimeout);
-    clearTimeout(carouselInstance.autoSlideResumeTimeout);
-    clearTimeout(carouselInstance.carouselHoverTimeout);
-    stopAutoSlide();
-  };
-  
-  const carouselMouseLeaveHandler = function() {
-    clearTimeout(carouselInstance.carouselHoverTimeout);
-    clearTimeout(carouselInstance.autoSlideResumeTimeout);
-    
-    // Delay restart to prevent conflicts
-    carouselInstance.carouselHoverTimeout = setTimeout(() => {
-      startAutoSlide();
-    }, 1000);
-  };
-  
-  // SIMPLE hover handling - HANYA pause auto-slide saat hover carousel
+  // Simple hover handling - only pause auto-slide when hovering carousel
   const simpleMouseEnterHandler = function() {
     stopAutoSlide();
   };
@@ -249,44 +218,47 @@ function initializeCarousel() {
     }, 500);
   };
   
-  carouselInstance.addEventListener(carousel, 'mouseenter', simpleMouseEnterHandler);
-  carouselInstance.addEventListener(carousel, 'mouseleave', simpleMouseLeaveHandler);
-    
-  // Initialize
+  instance.addEventListener(carousel, 'mouseenter', simpleMouseEnterHandler);
+  instance.addEventListener(carousel, 'mouseleave', simpleMouseLeaveHandler);
+  
+  // Initialize carousel
   updateCarousel(false);
   startAutoSlide();
-    
+  
   // Handle window resize
   const resizeHandler = function() {
-    clearTimeout(carouselInstance.resizeTimeout);
-    carouselInstance.resizeTimeout = setTimeout(function() {
+    clearTimeout(instance.resizeTimeout);
+    instance.resizeTimeout = setTimeout(function() {
       // Recalculate position on resize
       currentTranslate = currentIndex * itemWidth;
       updateCarousel(false);
     }, 250);
   };
   
-  carouselInstance.addEventListener(window, 'resize', resizeHandler);
+  instance.addEventListener(window, 'resize', resizeHandler);
   
   // Safety mechanism: periodically check if auto-slide is running
   const safetyCheck = setInterval(() => {
-    if (carouselInstance && 
-        document.getElementById('bookCarousel') && 
-        !carouselInstance.autoSlideInterval && 
+    if (instance && 
+        carousel.closest('body') && // Check if still in DOM
+        !instance.autoSlideInterval && 
         !isTransitioning) {
       startAutoSlide();
     }
   }, 10000);
   
-  // Store safety check for cleanup
-  carouselInstance.safetyCheck = safetyCheck;
+  instance.safetyCheck = safetyCheck;
   
-  // Expose carousel instance globally for external control
-  window.carouselInstance = carouselInstance;
+  // Add to instances array
+  carouselInstances.push(instance);
 }
 
-// Initialize carousel on DOM ready
-document.addEventListener('DOMContentLoaded', initializeCarousel);
+// Initialize carousels on DOM ready
+document.addEventListener('DOMContentLoaded', initializeCarousels);
+
+// Global function to manually reinitialize carousels
+window.reinitializeCarousels = initializeCarousels;
+window.carouselInstances = carouselInstances;
 
 // Re-initialize carousel when returning to homepage or when DOM changes
 document.addEventListener('visibilitychange', function() {
