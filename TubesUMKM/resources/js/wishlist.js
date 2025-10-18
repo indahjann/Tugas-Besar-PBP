@@ -14,19 +14,18 @@
     }
 
     const wishlistContainer = document.getElementById('wishlistContainer');
-    if (!wishlistContainer) {
-        console.log('[Wishlist] Container not found');
-        return;
-    }
-
+    
     console.log('[Wishlist] Initializing wishlist page manager');
 
     // Initialize wishlist state from current items
-    initWishlistStateFromDOM();
-
-    // OVERRIDE: Handle wishlist button clicks on wishlist page
-    // We need to intercept before categories.js handles it
-    document.addEventListener('click', handleWishlistClick, true); // true = capture phase
+    if (wishlistContainer) {
+        initWishlistStateFromDOM();
+        // OVERRIDE: Handle wishlist button clicks on wishlist page
+        document.addEventListener('click', handleWishlistClick, true);
+    } else {
+        // Container tidak ada = sudah empty state dari server
+        console.log('[Wishlist] Container not found - already empty');
+    }
 
     /**
      * Initialize sessionStorage from current DOM items
@@ -56,18 +55,14 @@
         const wishlistBtn = e.target.closest('.btn-favorites');
         if (!wishlistBtn) return;
 
-        // Only handle if button is currently active (removing from wishlist)
         const isActive = wishlistBtn.classList.contains('active');
-        if (!isActive) return; // Let categories.js handle adding
+        if (!isActive) return;
 
         const bookCard = wishlistBtn.closest('.book-card-modern');
         if (!bookCard) return;
 
         const bookId = wishlistBtn.getAttribute('data-book-id');
         console.log('[Wishlist] Removing book:', bookId);
-
-        // Don't prevent default - let the toggle happen
-        // But monitor the result
 
         // Use MutationObserver to watch for class changes
         const observer = new MutationObserver(function(mutations) {
@@ -84,16 +79,12 @@
             });
         });
 
-        // Start observing the button
         observer.observe(wishlistBtn, {
             attributes: true,
             attributeFilter: ['class']
         });
 
-        // Safety timeout - disconnect observer after 3 seconds
-        setTimeout(() => {
-            observer.disconnect();
-        }, 3000);
+        setTimeout(() => observer.disconnect(), 3000);
     }
 
     /**
@@ -102,18 +93,13 @@
     function removeCardFromDOM(card, bookId) {
         console.log('[Wishlist] Removing card for book:', bookId);
         
-        // Animate out
         card.style.transition = 'all 0.3s ease';
         card.style.opacity = '0';
         card.style.transform = 'scale(0.9)';
 
         setTimeout(function() {
             card.remove();
-            
-            // Update sessionStorage
             updateSessionStorage(bookId, false);
-            
-            // Check if wishlist is now empty
             checkIfEmpty();
         }, 300);
     }
@@ -138,6 +124,8 @@
      * Check if wishlist is empty
      */
     function checkIfEmpty() {
+        if (!wishlistContainer) return;
+        
         const remainingCards = wishlistContainer.querySelectorAll('.book-card-modern');
         const count = remainingCards.length;
         
@@ -160,46 +148,36 @@
         }
     }
 
-    /**
-     * Show empty wishlist state
-     */
     function showEmptyState() {
         console.log('[Wishlist] Showing empty state');
         
         const booksContent = document.querySelector('.books-content');
         if (!booksContent) return;
 
-        // Hide grid and results
-        if (wishlistContainer) {
-            wishlistContainer.style.display = 'none';
-        }
-        
-        const resultsInfo = document.querySelector('.results-info');
-        if (resultsInfo) {
-            resultsInfo.style.display = 'none';
-        }
+        booksContent.innerHTML = '';
 
-        // Create and show empty state
         const emptyState = document.createElement('div');
         emptyState.className = 'empty-state';
         emptyState.style.opacity = '0';
         emptyState.style.transition = 'opacity 0.3s ease';
+        
+        const baseUrl = window.location.origin;
+        
         emptyState.innerHTML = `
             <i class="far fa-heart"></i>
-            <h3>Your Wishlist is Empty</h3>
-            <p>Start adding books you love!</p>
-            <a href="${window.location.origin}/categories" class="btn-primary">
-                <i class="fas fa-book"></i> Browse Books
+            <h3>Wishlist Kamu Kosong</h3>
+            <p>Mulai tambahkan buku yang kamu suka!</p>
+            <a href="${baseUrl}/categories" class="btn-primary">
+                Jelajahi Buku!
             </a>
         `;
         
         booksContent.appendChild(emptyState);
         
-        // Animate in
         setTimeout(() => {
             emptyState.style.opacity = '1';
         }, 100);
     }
-
+    
     console.log('[Wishlist] Manager ready with MutationObserver');
 })();

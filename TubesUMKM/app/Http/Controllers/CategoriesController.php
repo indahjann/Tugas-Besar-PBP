@@ -49,7 +49,7 @@ class CategoriesController extends Controller
         }
 
         // Get books with pagination
-        $books = $booksQuery->paginate(12);
+        $books = $booksQuery->paginate(15);
         
         // Get popular categories (categories with most books)
         $popularCategories = Category::withCount('books')

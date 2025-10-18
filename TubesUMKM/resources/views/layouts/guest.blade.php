@@ -20,9 +20,9 @@
                 <!-- Logo -->
                 <div class="text-center mb-4">
                     <a href="/" class="inline-flex items-center gap-2 group">
-                        <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <h1 class="text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent" style="color: #0066cc;">
                             BUKUKU
-                        </span>
+                        </h1>
                     </a>
                 </div>
                 

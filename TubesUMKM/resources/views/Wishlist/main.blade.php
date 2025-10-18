@@ -37,7 +37,9 @@
                     <i class="far fa-heart"></i>
                     <h3>Wishlist Kamu Kosong</h3>
                     <p>Mulai tambahkan buku yang kamu suka!</p>
-                    <a href="{{ url('/categories') }}" class="btn-primary">Jelajahi Buku</a>
+                    <a href="{{ url('/categories') }}" class="btn-primary">
+                         Jelajahi Buku!
+                    </a>
                 </div>
             @endif
         </div>
