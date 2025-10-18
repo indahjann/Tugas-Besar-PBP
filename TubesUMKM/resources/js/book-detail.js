@@ -1,8 +1,3 @@
-/**
- * Book Detail Page Functionality
- * Handles wishlist, cart, and read more functionality
- */
-
 document.addEventListener('DOMContentLoaded', function() {
     initBookDetail();
 });
@@ -70,10 +65,7 @@ function initWishlistFunctionality() {
                 if (data.success) {
                     const isWishlisted = data.action === 'added';
                     
-                    if (window.GlobalSync) {
-                        window.GlobalSync.syncWishlistStatus(bookId, isWishlisted);
-                    }
-                    
+                    // Update button state
                     if (isWishlisted) {
                         this.classList.add('wishlist-active');
                         this.innerHTML = '<i class="fas fa-heart"></i> <span>Favorit</span>';
@@ -82,12 +74,12 @@ function initWishlistFunctionality() {
                         this.innerHTML = '<i class="far fa-heart"></i> <span>Favorit</span>';
                     }
                     
-                    const message = isWishlisted ? 'Buku ditambahkan ke wishlist!' : 'Buku dihapus dari wishlist!';
-                    if (window.GlobalSync) {
-                        window.GlobalSync.showNotification(message, isWishlisted ? 'success' : 'info');
-                    } else {
-                        showNotification(message, isWishlisted ? 'success' : 'info');
-                    }
+                    // Update sessionStorage (sync with other pages)
+                    updateSessionStorage(bookId, isWishlisted);
+                    
+                    // Show unified notification
+                    const message = isWishlisted ? 'Buku ditambahkan ke wishlist' : 'Buku dihapus dari wishlist';
+                    showNotification(message, isWishlisted ? 'success' : 'info');
                 } else {
                     throw new Error(data.message || 'Gagal mengubah status wishlist');
                 }
@@ -95,11 +87,7 @@ function initWishlistFunctionality() {
             .catch(error => {
                 console.error('Wishlist error:', error);
                 this.innerHTML = originalContent;
-                if (window.GlobalSync) {
-                    window.GlobalSync.showNotification('Terjadi kesalahan. Silakan coba lagi.', 'error');
-                } else {
-                    showNotification('Terjadi kesalahan. Silakan coba lagi.', 'error');
-                }
+                showNotification('Terjadi kesalahan. Silakan coba lagi.', 'error');
             })
             .finally(() => {
                 this.disabled = false;
@@ -142,31 +130,17 @@ function initAddToCartFunctionality() {
                     this.innerHTML = '<i class="fas fa-check"></i> <span>Ditambahkan!</span>';
                     this.style.background = 'linear-gradient(135deg, #28a745 0%, #20692a 100%)';
                     
-                    // PERBAIKAN: Gunakan fungsi yang sama dengan cart.js
+                    // Update cart badge
                     if (data.cart_count !== undefined) {
-                        // Prioritas 1: Gunakan fungsi global dari CartManager
                         if (window.cartManager && typeof window.cartManager.updateCartBadge === 'function') {
                             window.cartManager.updateCartBadge(data.cart_count);
-                        }
-                        // Prioritas 2: Gunakan fungsi global updateCartBadgeWithCount
-                        else if (window.updateCartBadgeWithCount) {
+                        } else if (window.updateCartBadgeWithCount) {
                             window.updateCartBadgeWithCount(data.cart_count);
-                        }
-                        // Prioritas 3: Gunakan GlobalSync
-                        else if (window.GlobalSync && typeof window.GlobalSync.updateCartCounter === 'function') {
-                            window.GlobalSync.updateCartCounter(data.cart_count);
-                        }
-                        // Fallback: Update manual
-                        else {
-                            updateCartCounterFallback(data.cart_count);
                         }
                     }
                     
-                    if (window.GlobalSync) {
-                        window.GlobalSync.showNotification('Produk berhasil ditambahkan ke keranjang!', 'success');
-                    } else {
-                        showNotification('Produk berhasil ditambahkan ke keranjang!', 'success');
-                    }
+                    // Show unified notification
+                    showNotification('Produk berhasil ditambahkan ke keranjang!', 'success');
                     
                     setTimeout(() => {
                         this.innerHTML = originalContent;
@@ -181,11 +155,7 @@ function initAddToCartFunctionality() {
                 console.error('Add to cart error:', error);
                 this.innerHTML = originalContent;
                 this.disabled = false;
-                if (window.GlobalSync) {
-                    window.GlobalSync.showNotification(error.message || 'Gagal menambahkan ke keranjang', 'error');
-                } else {
-                    showNotification(error.message || 'Gagal menambahkan ke keranjang', 'error');
-                }
+                showNotification(error.message || 'Gagal menambahkan ke keranjang', 'error');
             });
         });
     });
@@ -218,22 +188,20 @@ function initShareFunctionality() {
 }
 
 /**
- * Update cart counter - Fallback implementation
+ * Update sessionStorage with wishlist state
+ * This syncs with categories.js and wishlist.js
  */
-function updateCartCounterFallback(count) {
-    // Update semua badge cart di navbar
-    const cartBadges = document.querySelectorAll('.cart-badge, .cart-count, .cart-counter');
+function updateSessionStorage(bookId, isActive) {
+    const wishlistState = JSON.parse(sessionStorage.getItem('wishlistState') || '{}');
     
-    cartBadges.forEach(badge => {
-        badge.textContent = count;
-        badge.style.display = count > 0 ? 'inline-flex' : 'none';
-        
-        // Add bounce animation
-        badge.classList.add('cart-badge-bounce');
-        setTimeout(() => {
-            badge.classList.remove('cart-badge-bounce');
-        }, 500);
-    });
+    if (isActive) {
+        wishlistState[bookId] = true;
+    } else {
+        delete wishlistState[bookId];
+    }
+    
+    sessionStorage.setItem('wishlistState', JSON.stringify(wishlistState));
+    console.log('[BookDetail] Updated sessionStorage:', wishlistState);
 }
 
 function copyToClipboard(text) {
@@ -250,84 +218,42 @@ function copyToClipboard(text) {
     }
 }
 
+/**
+ * Unified notification function (same as categories.js)
+ */
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
+    
+    const iconMap = {
+        'success': 'check-circle',
+        'error': 'exclamation-circle',
+        'info': 'info-circle',
+        'warning': 'exclamation-triangle'
+    };
+    
     notification.innerHTML = `
         <div class="notification-content">
-            <i class="fas fa-${getNotificationIcon(type)}"></i>
+            <i class="fas fa-${iconMap[type]}"></i>
             <span>${message}</span>
         </div>
-        <button class="notification-close">
-            <i class="fas fa-times"></i>
-        </button>
     `;
-    
-    Object.assign(notification.style, {
-        position: 'fixed',
-        top: '20px',
-        right: '20px',
-        minWidth: '300px',
-        padding: '16px',
-        borderRadius: '8px',
-        color: 'white',
-        zIndex: '9999',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-        background: getNotificationColor(type),
-        transform: 'translateX(400px)',
-        transition: 'all 0.3s ease'
-    });
     
     document.body.appendChild(notification);
     
-    setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 100);
-    
-    const closeBtn = notification.querySelector('.notification-close');
-    closeBtn.addEventListener('click', () => {
-        removeNotification(notification);
-    });
+    setTimeout(() => notification.classList.add('show'), 100);
     
     setTimeout(() => {
-        if (document.body.contains(notification)) {
-            removeNotification(notification);
-        }
-    }, 5000);
-}
-
-function removeNotification(notification) {
-    notification.style.transform = 'translateX(400px)';
-    setTimeout(() => {
-        if (document.body.contains(notification)) {
-            document.body.removeChild(notification);
-        }
-    }, 300);
-}
-
-function getNotificationIcon(type) {
-    switch(type) {
-        case 'success': return 'check-circle';
-        case 'error': return 'exclamation-circle';
-        case 'warning': return 'exclamation-triangle';
-        default: return 'info-circle';
-    }
-}
-
-function getNotificationColor(type) {
-    switch(type) {
-        case 'success': return 'linear-gradient(135deg, #28a745 0%, #20692a 100%)';
-        case 'error': return 'linear-gradient(135deg, #dc3545 0%, #a71e2a 100%)';
-        case 'warning': return 'linear-gradient(135deg, #ffc107 0%, #d39e00 100%)';
-        default: return 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)';
-    }
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
 }
 
 // Export functions for potential use by other modules
 window.BookDetail = {
-    updateCartCounter: updateCartCounterFallback,
     showNotification
 };
