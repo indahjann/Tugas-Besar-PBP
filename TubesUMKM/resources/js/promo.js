@@ -1,47 +1,38 @@
-/**
- * Promo Carousel - Gramedia Style
- * Auto-play carousel with navigation controls
- */
-
 class PromoCarousel {
     constructor() {
         this.currentIndex = 0;
         this.slides = [];
         this.indicators = [];
         this.autoplayInterval = null;
-        this.autoplayDelay = 5000; // 5 seconds
+        this.autoplayDelay = 5000;
         this.isTransitioning = false;
         
         this.init();
     }
 
     init() {
-        // Get DOM elements
         this.track = document.getElementById('promoTrack');
         this.prevBtn = document.getElementById('promoPrev');
         this.nextBtn = document.getElementById('promoNext');
         this.indicatorsContainer = document.getElementById('promoIndicators');
         
-        if (!this.track) return;
+        if (!this.track) {
+            return;
+        }
         
-        // Get all slides and indicators
         this.slides = Array.from(this.track.querySelectorAll('.promo-slide'));
         this.indicators = Array.from(this.indicatorsContainer?.querySelectorAll('.indicator') || []);
         
-        if (this.slides.length === 0) return;
+        if (this.slides.length === 0) {
+            return;
+        }
         
-        // Set up event listeners
         this.setupEventListeners();
-        
-        // Mark first slide as active
         this.updateSlideState();
-        
-        // Start autoplay
         this.startAutoplay();
     }
 
     setupEventListeners() {
-        // Navigation buttons
         if (this.prevBtn) {
             this.prevBtn.addEventListener('click', () => this.prev());
         }
@@ -50,25 +41,21 @@ class PromoCarousel {
             this.nextBtn.addEventListener('click', () => this.next());
         }
         
-        // Indicator dots
         this.indicators.forEach((indicator, index) => {
             indicator.addEventListener('click', () => this.goToSlide(index));
         });
         
-        // Pause autoplay on hover
         const carousel = document.getElementById('promoCarousel');
         if (carousel) {
             carousel.addEventListener('mouseenter', () => this.stopAutoplay());
             carousel.addEventListener('mouseleave', () => this.startAutoplay());
         }
         
-        // Keyboard navigation
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') this.prev();
             if (e.key === 'ArrowRight') this.next();
         });
         
-        // Touch/swipe support
         this.setupTouchEvents();
     }
 
@@ -95,9 +82,9 @@ class PromoCarousel {
         
         if (Math.abs(diff) > swipeThreshold) {
             if (diff > 0) {
-                this.next(); // Swipe left
+                this.next();
             } else {
-                this.prev(); // Swipe right
+                this.prev();
             }
         }
     }
@@ -129,17 +116,12 @@ class PromoCarousel {
     updateCarousel() {
         this.isTransitioning = true;
         
-        // Update track position
         const offset = -this.currentIndex * 100;
         this.track.style.transform = `translateX(${offset}%)`;
         
-        // Update indicators
         this.updateIndicators();
-        
-        // Update slide states for animations
         this.updateSlideState();
         
-        // Reset transition lock
         setTimeout(() => {
             this.isTransitioning = false;
         }, 500);
@@ -170,7 +152,7 @@ class PromoCarousel {
     }
 
     startAutoplay() {
-        this.stopAutoplay(); // Clear any existing interval
+        this.stopAutoplay();
         
         this.autoplayInterval = setInterval(() => {
             this.next();
@@ -189,20 +171,34 @@ class PromoCarousel {
     }
 }
 
-// Initialize promo carousel when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    const promoCarousel = new PromoCarousel();
-    
-    // Store instance globally if needed
-    window.PromoCarousel = promoCarousel;
-});
+// Initialize on page load
+let promoCarouselInstance = null;
 
-// Re-initialize after AJAX navigation (if using Turbo/Livewire)
-document.addEventListener('turbo:load', () => {
-    if (window.PromoCarousel) {
-        window.PromoCarousel.stopAutoplay();
+function initializePromoCarousel() {
+    const promoTrack = document.getElementById('promoTrack');
+    if (promoTrack && !promoCarouselInstance) {
+        promoCarouselInstance = new PromoCarousel();
     }
-    window.PromoCarousel = new PromoCarousel();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePromoCarousel);
+} else {
+    initializePromoCarousel();
+}
+
+// Reinitialize on AJAX navigation (untuk logo BUKUKU)
+document.addEventListener('click', (e) => {
+    const ajaxLink = e.target.closest('[data-ajax-link]');
+    if (ajaxLink) {
+        const href = ajaxLink.getAttribute('href');
+        if (href === '/' || href === '') {
+            setTimeout(() => {
+                promoCarouselInstance = null;
+                initializePromoCarousel();
+            }, 300);
+        }
+    }
 });
 
 export default PromoCarousel;

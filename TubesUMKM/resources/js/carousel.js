@@ -1,12 +1,13 @@
-// Multiple Carousel Handler for Homepage with Original Logic
 let carouselInstances = [];
 
 function initializeCarousels() {
-  // Clean up existing instances
-  carouselInstances.forEach(instance => instance.destroy());
+  carouselInstances.forEach(instance => {
+    if (instance && instance.destroy) {
+      instance.destroy();
+    }
+  });
   carouselInstances = [];
   
-  // Find all carousels on the page
   const carousels = document.querySelectorAll('.custom-carousel');
   
   carousels.forEach((carousel, index) => {
@@ -21,7 +22,6 @@ function initializeCarousels() {
 }
 
 function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
-  // Create instance object
   const instance = {
     carousel,
     track,
@@ -30,26 +30,23 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     index,
     autoSlideInterval: null,
     autoSlideResumeTimeout: null,
-    carouselHoverTimeout: null,
-    hoverTimeout: null,
     resizeTimeout: null,
     eventListeners: [],
     safetyCheck: null,
+    isDestroyed: false,
     
     destroy() {
-      // Clear all timers
+      if (this.isDestroyed) return;
+      this.isDestroyed = true;
+      
       clearInterval(this.autoSlideInterval);
       clearInterval(this.safetyCheck);
       clearTimeout(this.autoSlideResumeTimeout);
-      clearTimeout(this.carouselHoverTimeout);
-      clearTimeout(this.hoverTimeout);
       clearTimeout(this.resizeTimeout);
       
-      // Reset flags
       this.autoSlideInterval = null;
       this.safetyCheck = null;
       
-      // Remove event listeners
       this.eventListeners.forEach(({ element, event, handler }) => {
         if (element && element.removeEventListener) {
           element.removeEventListener(event, handler);
@@ -57,7 +54,6 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
       });
       this.eventListeners = [];
       
-      // Reset carousel state
       if (this.track) {
         this.track.style.transition = 'none';
         this.track.style.transform = 'translateX(0)';
@@ -65,16 +61,20 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     },
     
     addEventListener(element, event, handler) {
+      if (!element) return;
       element.addEventListener(event, handler);
       this.eventListeners.push({ element, event, handler });
     }
   };
   
+  track.querySelectorAll('.carousel-clone').forEach(el => el.remove());
+  
   const originalItems = Array.from(track.querySelectorAll('.carousel-item-custom'));
-  const itemWidth = 215; // 200px + 15px gap
+  const itemWidth = 215;
   const totalItems = originalItems.length;
   
-  // Clone items for infinite loop - original logic
+  if (totalItems === 0) return;
+  
   const clonesToAppend = Math.min(4, totalItems);
   for (let i = 0; i < clonesToAppend; i++) {
     const clone = originalItems[i].cloneNode(true);
@@ -89,20 +89,19 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     track.insertBefore(clone, track.firstChild);
   }
   
-  // Update array items including clones
-  const allItems = Array.from(track.querySelectorAll('.carousel-item-custom'));
   const startIndex = clonesToPrepend;
   let currentIndex = startIndex;
-  
-  // Set initial position (start from first real item)
   let currentTranslate = startIndex * itemWidth;
-  track.style.transform = `translateX(-${currentTranslate}px)`;
-  
   let isTransitioning = false;
   let lastSlideTime = 0;
   const slideThrottle = 300;
   
+  track.style.transform = `translateX(-${currentTranslate}px)`;
+  track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+  
   function updateCarousel(animate = true) {
+    if (instance.isDestroyed) return;
+    
     if (animate) {
       track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     } else {
@@ -110,15 +109,18 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     }
     track.style.transform = `translateX(-${currentTranslate}px)`;
     
-    // Re-enable transition after a moment
     if (!animate) {
       setTimeout(() => {
-        track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        if (!instance.isDestroyed) {
+          track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        }
       }, 50);
     }
   }
   
   function nextSlide() {
+    if (instance.isDestroyed) return;
+    
     const now = Date.now();
     if (isTransitioning || (now - lastSlideTime) < slideThrottle) {
       return;
@@ -131,10 +133,10 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     
     updateCarousel(true);
     
-    // Check if we need to loop back
     setTimeout(() => {
+      if (instance.isDestroyed) return;
+      
       if (currentIndex >= totalItems + startIndex) {
-        // At last clone, jump to beginning
         currentIndex = startIndex;
         currentTranslate = startIndex * itemWidth;
         updateCarousel(false);
@@ -144,6 +146,8 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
   }
   
   function prevSlide() {
+    if (instance.isDestroyed) return;
+    
     const now = Date.now();
     if (isTransitioning || (now - lastSlideTime) < slideThrottle) {
       return;
@@ -156,10 +160,10 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     
     updateCarousel(true);
     
-    // Check if we need to loop forward
     setTimeout(() => {
+      if (instance.isDestroyed) return;
+      
       if (currentIndex < startIndex) {
-        // At first clone, jump to real end
         currentIndex = totalItems + startIndex - 1;
         currentTranslate = currentIndex * itemWidth;
         updateCarousel(false);
@@ -169,10 +173,14 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
   }
   
   function startAutoSlide() {
+    if (instance.isDestroyed) return;
+    
     if (instance.autoSlideInterval) {
       clearInterval(instance.autoSlideInterval);
     }
-    instance.autoSlideInterval = setInterval(nextSlide, 6000);
+    instance.autoSlideInterval = setInterval(() => {
+      if (!instance.isDestroyed) nextSlide();
+    }, 6000);
   }
   
   function stopAutoSlide() {
@@ -182,297 +190,184 @@ function initializeSingleCarousel(carousel, track, prevBtn, nextBtn, index) {
     }
   }
   
-  // Event listeners with improved handling from original code
   function handleManualSlide(slideFunction) {
+    if (instance.isDestroyed) return;
+    
     clearTimeout(instance.autoSlideResumeTimeout);
     stopAutoSlide();
     slideFunction();
     instance.autoSlideResumeTimeout = setTimeout(() => {
-      startAutoSlide();
+      if (!instance.isDestroyed) startAutoSlide();
     }, 8000);
   }
   
-  const nextClickHandler = function(e) {
+  const nextClickHandler = (e) => {
     e.preventDefault();
     e.stopImmediatePropagation();
     handleManualSlide(nextSlide);
   };
   
-  const prevClickHandler = function(e) {
+  const prevClickHandler = (e) => {
     e.preventDefault();
     e.stopImmediatePropagation();
     handleManualSlide(prevSlide);
   };
   
-  instance.addEventListener(nextBtn, 'click', nextClickHandler);
-  instance.addEventListener(prevBtn, 'click', prevClickHandler);
-  
-  // Simple hover handling - only pause auto-slide when hovering carousel
-  const simpleMouseEnterHandler = function() {
-    stopAutoSlide();
+  const mouseEnterHandler = () => {
+    if (!instance.isDestroyed) stopAutoSlide();
   };
   
-  const simpleMouseLeaveHandler = function() {
-    setTimeout(() => {
-      startAutoSlide();
-    }, 500);
+  const mouseLeaveHandler = () => {
+    if (!instance.isDestroyed) {
+      setTimeout(() => {
+        if (!instance.isDestroyed) startAutoSlide();
+      }, 500);
+    }
   };
   
-  instance.addEventListener(carousel, 'mouseenter', simpleMouseEnterHandler);
-  instance.addEventListener(carousel, 'mouseleave', simpleMouseLeaveHandler);
-  
-  // Initialize carousel
-  updateCarousel(false);
-  startAutoSlide();
-  
-  // Handle window resize
-  const resizeHandler = function() {
+  const resizeHandler = () => {
     clearTimeout(instance.resizeTimeout);
-    instance.resizeTimeout = setTimeout(function() {
-      // Recalculate position on resize
-      currentTranslate = currentIndex * itemWidth;
-      updateCarousel(false);
+    instance.resizeTimeout = setTimeout(() => {
+      if (!instance.isDestroyed) {
+        currentTranslate = currentIndex * itemWidth;
+        updateCarousel(false);
+      }
     }, 250);
   };
   
+  instance.addEventListener(nextBtn, 'click', nextClickHandler);
+  instance.addEventListener(prevBtn, 'click', prevClickHandler);
+  instance.addEventListener(carousel, 'mouseenter', mouseEnterHandler);
+  instance.addEventListener(carousel, 'mouseleave', mouseLeaveHandler);
   instance.addEventListener(window, 'resize', resizeHandler);
   
-  // Safety mechanism: periodically check if auto-slide is running
-  const safetyCheck = setInterval(() => {
-    if (instance && 
-        carousel.closest('body') && // Check if still in DOM
+  instance.safetyCheck = setInterval(() => {
+    if (instance.isDestroyed) {
+      clearInterval(instance.safetyCheck);
+      return;
+    }
+    
+    if (carousel.closest('body') && 
         !instance.autoSlideInterval && 
         !isTransitioning) {
       startAutoSlide();
     }
   }, 10000);
   
-  instance.safetyCheck = safetyCheck;
+  updateCarousel(false);
+  startAutoSlide();
   
-  // Add to instances array
   carouselInstances.push(instance);
 }
 
-// Initialize carousels on DOM ready
-document.addEventListener('DOMContentLoaded', initializeCarousels);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeCarousels);
+} else {
+  initializeCarousels();
+}
 
-// Global function to manually reinitialize carousels
 window.reinitializeCarousels = initializeCarousels;
 window.carouselInstances = carouselInstances;
 
-// Re-initialize carousel when returning to homepage or when DOM changes
-document.addEventListener('visibilitychange', function() {
+document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
-    // Page became visible, check if carousel needs reinitialization
     setTimeout(() => {
-      const carousel = document.getElementById('bookCarousel');
-      // Only initialize if carousel exists and no working instance
-      if (carousel && 
-          (!carouselInstance || 
-           carouselInstance.carousel !== carousel ||
-           !carouselInstance.autoSlideInterval)) {
-        initializeCarousel();
+      const carousels = document.querySelectorAll('.custom-carousel');
+      if (carousels.length > 0 && carouselInstances.length === 0) {
+        initializeCarousels();
       }
     }, 200);
   }
 });
 
-// Listen for navigation events (for SPA-like navigation)
-window.addEventListener('popstate', function() {
+window.addEventListener('popstate', () => {
   setTimeout(() => {
-    const carousel = document.getElementById('bookCarousel');
-    if (carousel) {
-      initializeCarousel();
+    const carousels = document.querySelectorAll('.custom-carousel');
+    if (carousels.length > 0) {
+      initializeCarousels();
     }
   }, 100);
 });
 
-// Watch for DOM changes - OPTIMIZED to prevent favorites button lag
+// AJAX Navigation Handler - untuk logo BUKUKU
+document.addEventListener('click', (e) => {
+  const ajaxLink = e.target.closest('[data-ajax-link]');
+  if (ajaxLink) {
+    const href = ajaxLink.getAttribute('href');
+    if (href === '/' || href === '') {
+      setTimeout(() => {
+        const carousels = document.querySelectorAll('.custom-carousel');
+        if (carousels.length > 0) {
+          initializeCarousels();
+        }
+      }, 300);
+    }
+  }
+});
+
+// Custom event untuk AJAX navigation (jika ada)
+document.addEventListener('contentLoaded', () => {
+  setTimeout(() => {
+    const carousels = document.querySelectorAll('.custom-carousel');
+    if (carousels.length > 0) {
+      initializeCarousels();
+    }
+  }, 100);
+});
+
+// Additional listener untuk hash change
+window.addEventListener('hashchange', () => {
+  if (window.location.pathname === '/' || window.location.pathname === '') {
+    setTimeout(() => {
+      const carousels = document.querySelectorAll('.custom-carousel');
+      if (carousels.length > 0) {
+        initializeCarousels();
+      }
+    }, 200);
+  }
+});
+
 if ('MutationObserver' in window) {
   let mutationTimeout;
   
-  const observer = new MutationObserver(function(mutations) {
-    // Filter mutations to only relevant ones
+  const observer = new MutationObserver((mutations) => {
     const relevantMutations = mutations.filter(mutation => {
-      // Ignore class changes to buttons (favorites toggle)
       if (mutation.type === 'attributes' && 
           mutation.attributeName === 'class' && 
-          (mutation.target.classList.contains('btn-favorites') ||
-           mutation.target.classList.contains('btn-add-to-cart'))) {
+          (mutation.target.classList?.contains('btn-favorites') ||
+           mutation.target.classList?.contains('btn-add-to-cart'))) {
         return false;
       }
       
-      // Ignore mutations inside book cards (avoid carousel reinit on button clicks)
       if (mutation.target.closest && 
           (mutation.target.closest('.book-card-modern') ||
            mutation.target.closest('.carousel-item-custom'))) {
         return false;
       }
       
-      // Only care about significant structural changes
       return mutation.type === 'childList' && 
              mutation.addedNodes.length > 0 &&
              Array.from(mutation.addedNodes).some(node => 
-               node.nodeType === 1 && // Element nodes only
-               (node.id === 'bookCarousel' || 
-                node.querySelector && node.querySelector('#bookCarousel'))
+               node.nodeType === 1 && 
+               (node.classList?.contains('custom-carousel') || 
+                node.querySelector?.('.custom-carousel'))
              );
     });
     
-    // Skip if no relevant mutations
-    if (relevantMutations.length === 0) {
-      return;
-    }
+    if (relevantMutations.length === 0) return;
     
-    // Debounce relevant mutations only
     clearTimeout(mutationTimeout);
     mutationTimeout = setTimeout(() => {
-      const carousel = document.getElementById('bookCarousel');
-      
-      // More strict reinitialization check
-      if (carousel && 
-          (!carouselInstance || 
-           carouselInstance.carousel !== carousel || 
-           !document.querySelector('#bookCarousel .carousel-track'))) {
-        initializeCarousel();
+      const carousels = document.querySelectorAll('.custom-carousel');
+      if (carousels.length > 0 && carouselInstances.length === 0) {
+        initializeCarousels();
       }
-    }, 300); // Longer debounce to prevent rapid reinitialization
+    }, 500);
   });
   
-  // More specific observation - avoid watching attributes that cause lag
   observer.observe(document.body, {
     childList: true,
     subtree: true,
-    attributes: false // Completely disable attribute watching
+    attributes: false
   });
 }
-
-// Global function to manually reinitialize carousel
-window.reinitializeCarousel = function() {
-  initializeCarousel();
-};
-
-// Event delegation for carousel buttons - OPTIMIZED
-let carouselEventsDelegated = false;
-
-function setupButtonHandlers() {
-  // Skip if already set up to prevent duplicates
-  if (carouselEventsDelegated) return;
-  
-  // Don't interfere with book-card.js event handling
-  // Just ensure carousel pauses during interactions
-  carouselEventsDelegated = true;
-}
-
-// Logo click handling only - button clicks handled by book-card.js
-document.addEventListener('click', function(e) {
-  // Check if it's a logo link click
-  const logoLink = e.target.closest('.logo-text, .logo-section a');
-  if (logoLink) {
-    // If we're already on home and carousel exists, don't reinitialize
-    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-      const carousel = document.getElementById('bookCarousel');
-      if (carousel && carouselInstance && carouselInstance.autoSlideInterval) {
-        e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return false;
-      }
-    }
-  }
-}); // Use normal bubbling phase
-
-document.addEventListener('DOMContentLoaded', function() {
-    const carousels = document.querySelectorAll('.custom-carousel');
-    
-    carousels.forEach(carousel => {
-        const track = carousel.querySelector('.carousel-track');
-        const slides = Array.from(track.children);
-        const prevBtn = carousel.querySelector('.nav-btn.prev');
-        const nextBtn = carousel.querySelector('.nav-btn.next');
-        
-        if (!track || slides.length === 0) return;
-        
-        // Configuration
-        const slideWidth = slides[0].offsetWidth;
-        const slideGap = 12; // Sesuai dengan gap di CSS
-        const slideMove = slideWidth + slideGap;
-        
-        let currentIndex = 0;
-        let isTransitioning = false;
-        
-        // Clone slides untuk infinite loop
-        const cloneCount = 5; // Clone 5 items di awal dan akhir
-        
-        // Clone last items dan prepend
-        for (let i = slides.length - cloneCount; i < slides.length; i++) {
-            const clone = slides[i].cloneNode(true);
-            clone.classList.add('clone');
-            track.insertBefore(clone, track.firstChild);
-        }
-        
-        // Clone first items dan append
-        for (let i = 0; i < cloneCount; i++) {
-            const clone = slides[i].cloneNode(true);
-            clone.classList.add('clone');
-            track.appendChild(clone);
-        }
-        
-        // Update slides array dengan clones
-        const allSlides = Array.from(track.children);
-        const totalSlides = allSlides.length;
-        
-        // Set initial position (skip cloned items)
-        currentIndex = cloneCount;
-        track.style.transform = `translateX(-${currentIndex * slideMove}px)`;
-        
-        // Move carousel function
-        function moveCarousel(direction) {
-            if (isTransitioning) return;
-            
-            isTransitioning = true;
-            currentIndex += direction;
-            
-            track.style.transition = 'transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94)';
-            track.style.transform = `translateX(-${currentIndex * slideMove}px)`;
-            
-            // Handle infinite loop
-            track.addEventListener('transitionend', handleTransitionEnd);
-        }
-        
-        function handleTransitionEnd() {
-            track.removeEventListener('transitionend', handleTransitionEnd);
-            
-            // Reset position jika sudah di clone
-            if (currentIndex <= 0) {
-                // Jump to real last item
-                track.style.transition = 'none';
-                currentIndex = slides.length;
-                track.style.transform = `translateX(-${currentIndex * slideMove}px)`;
-            } else if (currentIndex >= slides.length + cloneCount) {
-                // Jump to real first item
-                track.style.transition = 'none';
-                currentIndex = cloneCount;
-                track.style.transform = `translateX(-${currentIndex * slideMove}px)`;
-            }
-            
-            isTransitioning = false;
-        }
-        
-        // Button events
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => moveCarousel(-1));
-        }
-        
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => moveCarousel(1));
-        }
-        
-        // Auto-adjust on window resize
-        window.addEventListener('resize', () => {
-            const newSlideWidth = allSlides[0].offsetWidth;
-            const newSlideMove = newSlideWidth + slideGap;
-            track.style.transition = 'none';
-            track.style.transform = `translateX(-${currentIndex * newSlideMove}px)`;
-        });
-    });
-});

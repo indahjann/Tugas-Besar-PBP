@@ -51,22 +51,22 @@
 
 /* Color Themes */
 .promo-purple {
-    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    background: #4f56ea 100%;
     color: white;
 }
 
 .promo-blue {
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    background: #ad32cb 100%;
     color: white;
 }
 
 .promo-orange {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    background: #d97706 100%;
     color: white;
 }
 
 .promo-green {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: #059669 100%;
     color: white;
 }
 
@@ -197,11 +197,11 @@
 }
 
 .promo-prev {
-    left: -20px;
+    left: 10px;
 }
 
 .promo-next {
-    right: -20px;
+    right: 10px;
 }
 
 .promo-nav i {
