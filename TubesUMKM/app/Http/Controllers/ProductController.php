@@ -26,7 +26,6 @@ class ProductController extends Controller
      */
     public function index(): View
     {
-        // Redirect to categories index to reuse the canonical catalog UI.
         return redirect()->route('categories.index');
     }
 
@@ -42,10 +41,8 @@ class ProductController extends Controller
     $perPage = (int) $request->input('per_page', 12);
     $sort = $request->input('sort');
 
-    // Use service to get paginated books so categories view can be reused
     $books = $this->productService->searchProducts($searchTerm, $perPage, $sort);
 
-        // If the client explicitly wants JSON (Accept: application/json), return JSON
         if ($request->wantsJson() || str_contains($request->header('Accept', ''), 'application/json')) {
             return response()->json($books->map(function($p){
                 return [
@@ -58,31 +55,31 @@ class ProductController extends Controller
             }));
         }
 
-        // If not an AJAX request, gather categories for sidebar (same as CategoriesController).
-        // For AJAX search we skip this expensive query and pass empty collections because
-        // the categories sidebar is hidden for search results (`showSidebar => false`).
+        // Jika bukan permintaan AJAX, ambil daftar kategori untuk sidebar (sama seperti di CategoriesController).
+        // Untuk pencarian dengan AJAX, kita melewati query yang berat ini dan mengirimkan koleksi kosong karena
+        // sidebar kategori disembunyikan pada hasil pencarian (`showSidebar => false`).
         $categories = collect();
         $userWishlist = [];
         if (! $request->ajax()) {
             $categories = Category::withCount('books')->orderBy('name')->get();
 
-            // Get user's wishlist (for rendering book card state)
+            // Get user's wishlist
             if (Auth::check()) {
                 $userWishlist = Wishlist::where('user_id', Auth::id())->pluck('book_id')->toArray();
             }
         } else {
-            // For AJAX we still load wishlist if authenticated because the book card may need it
+            // Untuk permintaan AJAX, kita tetap memuat wishlist jika pengguna sudah terautentikasi
+            // karena kartu buku mungkin membutuhkannya.
             if (Auth::check()) {
                 $userWishlist = Wishlist::where('user_id', Auth::id())->pluck('book_id')->toArray();
             }
         }
 
-        // If AJAX request, render the main fragment from categories view so navbar loadPageContent
-        // can extract #main-content. The categories view expects variables: categories, books, selectedCategory.
+        // Jika permintaan AJAX, render fragmen utama dari tampilan kategori agar navbar loadPageContent
+        // dapat mengambil elemen #main-content. Tampilan kategori mengharapkan variabel: categories, books, selectedCategory.
         $selectedCategory = null;
 
         if ($request->ajax()) {
-            // Render the categories main partial (Categories.main) which is used by resources/views/categories.blade.php
             $html = view('Categories.main', [
                 'categories' => $categories,
                 'books' => $books,
@@ -95,7 +92,7 @@ class ProductController extends Controller
             return response($html, 200);
         }
 
-        // Default: render full categories page (blade wrapper)
+        // Default: render full halaman kategori (blade wrapper)
         return view('categories', [
             'categories' => $categories,
             'books' => $books,

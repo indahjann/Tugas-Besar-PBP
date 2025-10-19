@@ -11,24 +11,23 @@ use Illuminate\Support\Facades\Auth;
 class CategoriesController extends Controller
 {
     /**
-     * Display categories page with optional category filtering
+     * Menampilkan halaman kategori dengan optional category filtering
      */
     public function index(Request $request)
     {
-        // Get all categories for sidebar
+        // Get all categories untuk sidebar
         $categories = Category::withCount('books')->orderBy('name')->get();
         
-        // Initialize books query
+        // Inisialisasi kueri books
         $booksQuery = Book::with('category');
         
-        // Filter by category if provided
+        // Filter berdasarkan kategori jika ada
         $selectedCategory = null;
         if ($request->has('category') && $request->category) {
             $selectedCategory = Category::findOrFail($request->category);
             $booksQuery->where('category_id', $request->category);
         }
         
-        // Apply sort parameter
         $sort = $request->input('sort');
         switch ($sort) {
             case 'name_asc':
@@ -48,16 +47,15 @@ class CategoriesController extends Controller
                 break;
         }
 
-        // Get books with pagination
+        // Ambil books dengan pagination
         $books = $booksQuery->paginate(15);
         
-        // Get popular categories (categories with most books)
+        // Get popular categories (kategori dengan jumlah buku terbanyak)
         $popularCategories = Category::withCount('books')
             ->orderBy('books_count', 'desc')
             ->limit(5)
             ->get();
         
-        // Get user's wishlist for checking if books are already wishlisted
         $userWishlist = [];
         if (Auth::check()) {
             $userWishlist = Wishlist::where('user_id', Auth::id())
@@ -75,21 +73,17 @@ class CategoriesController extends Controller
     }
     
     /**
-     * Show specific category (called when clicking breadcrumb or category link)
+     * Tampilkan kategori spesifik (disebut juga clicking breadcrumb atau category link)
      */
     public function show($categoryId, Request $request)
     {
-        // Find category by ID only (no slug support)
         $selectedCategory = Category::findOrFail($categoryId);
         
-        // Get all categories for sidebar
         $categories = Category::withCount('books')->orderBy('name')->get();
         
-        // Initialize books query for this category
         $booksQuery = Book::with('category')
             ->where('category_id', $selectedCategory->id);
         
-        // Apply sort parameter
         $sort = $request->input('sort', 'name_asc');
         switch ($sort) {
             case 'name_asc':
@@ -109,16 +103,15 @@ class CategoriesController extends Controller
                 break;
         }
         
-        // Get books with pagination
+        // Ambil buku pagination
         $books = $booksQuery->paginate(12)->withQueryString();
         
-        // Get popular categories (categories with most books)
+        // Get popular categories (kategori dengan jumlah buku terbanyak)
         $popularCategories = Category::withCount('books')
             ->orderBy('books_count', 'desc')
             ->limit(5)
             ->get();
         
-        // Get user's wishlist for checking if books are already wishlisted
         $userWishlist = [];
         if (Auth::check()) {
             $userWishlist = Wishlist::where('user_id', Auth::id())
@@ -126,7 +119,6 @@ class CategoriesController extends Controller
                                   ->toArray();
         }
         
-        // Use the same view as index, but with selectedCategory set
         return view('categories', compact(
             'categories', 
             'books', 

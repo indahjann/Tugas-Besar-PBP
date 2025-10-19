@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 class OrderController extends Controller
 {
     /**
-     * Display user's order history
+     * Tampilkan order history pengguna
      */
     public function index()
     {
@@ -28,7 +28,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Show order detail
+     * Tampilkan detail order
      */
     public function show(Order $order)
     {
@@ -45,7 +45,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Cancel order (only if status is pending)
+     * Cancel order (hanya jika status pending)
      */
     public function cancel(Order $order)
     {
