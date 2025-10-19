@@ -16,15 +16,15 @@ class Order extends Model
         'address_text',
     ];
 
-    // Status constants (values must match DB enum values in migrations)
-    // Primary (DB) values
+    // Konstanta status (nilainya harus sesuai dengan nilai enum di database pada file migrasi)
+    // Nilai utama (dari database)
     const STATUS_PENDING = 'pending';
     const STATUS_DIPROSES = 'diproses';
     const STATUS_DIKIRIM = 'dikirim';
     const STATUS_SELESAI = 'selesai';
     const STATUS_BATAL = 'batal';
 
-    // Aliases (English names) kept for backward compatibility in code
+    // Alias (nama dalam bahasa Inggris) dipertahankan untuk kompatibilitas mundur dalam kode.
     const STATUS_PROCESSING = self::STATUS_DIPROSES;
     const STATUS_SHIPPED = self::STATUS_DIKIRIM;
     const STATUS_COMPLETED = self::STATUS_SELESAI;
@@ -94,7 +94,7 @@ class Order extends Model
     }
 
     /**
-     * Scope: latest orders first
+     * Scope: order terakhir dulu
      */
     public function scopeLatestFirst($query)
     {

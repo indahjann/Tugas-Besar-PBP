@@ -14,13 +14,12 @@ use Illuminate\Validation\Rules\Password;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Menampilkan form profil pengguna.
      */
     public function edit(Request $request): View
     {
         $user = $request->user();
         
-        // Tentukan view berdasarkan role user
         $view = $user->role === 'admin' ? 'profile.edit-admin' : 'profile.edit-user';
         
         return view($view, [
@@ -29,7 +28,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Update informasi profil pengguna.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
@@ -45,7 +44,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Delete akun pengguna.
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -66,7 +65,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's password.
+     * Update password pengguna.
      */
     public function updatePassword(Request $request): RedirectResponse
     {

@@ -104,12 +104,11 @@ class ProductController extends Controller
     }
 
     /**
-     * Provide search suggestions (simple titles) for navbar autocomplete.
+     * Menyediakan saran pencarian (judul sederhana) untuk fitur autocomplete pada navbar.
      */
     public function suggestions(Request $request)
     {
         $q = $request->input('q', '');
-        // Request a small paginated set and map the items for suggestions
         $booksPage = $this->productService->searchProducts($q, 8);
         $results = collect($booksPage->items())->map(function($p){
             return ['id' => $p->id, 'title' => $p->name, 'author' => $p->author];

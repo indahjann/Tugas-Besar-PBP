@@ -9,19 +9,19 @@ use Symfony\Component\HttpFoundation\Response;
 class UserMiddleware
 {
     /**
-     * Handle an incoming request.
+     * Handle  incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Check if user is authenticated
+        // Cek apakah user sudah login
         if (!auth()->check()) {
             return redirect()->route('login')
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        // Check if user is regular user (not admin)
+        // Cek apakah user adalah user biasa
         if (auth()->user()->role !== 'user') {
             abort(403, 'Akses ditolak. Fitur ini hanya untuk user biasa.');
         }

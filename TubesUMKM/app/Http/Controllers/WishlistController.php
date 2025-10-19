@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class WishlistController extends Controller
 {
     /**
-     * Get user's wishlist
+     * Ambil wishlist untuk pengguna saat ini.
      */
     public function index()
     {
@@ -25,7 +25,7 @@ class WishlistController extends Controller
             // Load wishlist dengan eager loading dan filter only existing books
             $wishlistItems = Wishlist::with(['book.category'])
                 ->where('user_id', $userId)
-                ->whereHas('book') // PENTING: Filter hanya wishlist yang book-nya masih ada
+                ->whereHas('book') // Filter hanya wishlist yang book-nya masih ada
                 ->latest()
                 ->get();
 
@@ -33,7 +33,6 @@ class WishlistController extends Controller
         } catch (\Exception $e) {
             Log::error('Wishlist Index Error: ' . $e->getMessage());
             
-            // Return empty collection on error
             $wishlistItems = collect();
             return view('wishlist', compact('wishlistItems'));
         }
@@ -61,16 +60,13 @@ class WishlistController extends Controller
         $bookId = $request->input('book_id');
 
         try {
-            // Check if item already exists in wishlist
+            // Cek apakah sudah ada di wishlist
             $wishlistItem = Wishlist::where('user_id', $userId)
                 ->where('book_id', $bookId)
                 ->first();
 
             if ($wishlistItem) {
-                // Remove from wishlist
                 $wishlistItem->delete();
-                
-                // Get updated wishlist count
                 $wishlistCount = Wishlist::where('user_id', $userId)->count();
                 
                 return response()->json([
@@ -80,13 +76,11 @@ class WishlistController extends Controller
                     'wishlist_count' => $wishlistCount
                 ]);
             } else {
-                // Add to wishlist
                 Wishlist::create([
                     'user_id' => $userId,
                     'book_id' => $bookId
                 ]);
                 
-                // Get updated wishlist count
                 $wishlistCount = Wishlist::where('user_id', $userId)->count();
                 
                 return response()->json([
@@ -107,7 +101,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Get wishlist count for current user
+     * Get wishlist count untuk pengguna saat ini
      */
     public function count(): JsonResponse
     {
@@ -136,7 +130,7 @@ class WishlistController extends Controller
     }
 
     /**
-     * Clear all wishlist items for current user
+     * Clear all wishlist items untuk pengguna saat ini
      */
     public function clear(): JsonResponse
     {
