@@ -36,10 +36,6 @@ Route::get('/search/suggestions', [ProductController::class, 'suggestions'])->na
 //     return view('about'); 
 // })->name('about');
 
-Route::get('/contact', function () {
-    return view('contact'); 
-})->name('contact');
-
 /*
 |--------------------------------------------------------------------------
 | Authenticated User Routes

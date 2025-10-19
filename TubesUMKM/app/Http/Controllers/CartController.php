@@ -87,7 +87,7 @@ class CartController extends Controller
         $validatedData = $request->validated();
         $userId = Auth::id();
 
-        // Pengecekan tambahan untuk memastikan user terotentikasi (Defensive Programming)
+        // Pengecekan tambahan untuk memastikan user terotentikasi
         if (!$userId) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }

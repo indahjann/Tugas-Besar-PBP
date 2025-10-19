@@ -9,7 +9,6 @@
 
             <!-- Navigation Links -->
             <div class="nav-links">
-                <a href="/contact" class="nav-link" data-ajax-link>Contact</a>
                 <div class="categories-dropdown" id="categoriesDropdown">
                     <button type="button" class="nav-link categories-trigger" id="categoriesBtn">
                         Categories
@@ -101,7 +100,6 @@
             <a href="/books" class="mobile-nav-link" data-ajax-link>Books</a>
             <a href="/categories" class="mobile-nav-link" data-ajax-link>Categories</a>
             <a href="/about" class="mobile-nav-link" data-ajax-link>About</a>
-            <a href="/contact" class="mobile-nav-link" data-ajax-link>Contact</a>
         </div>
 
         @auth
