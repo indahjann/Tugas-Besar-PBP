@@ -12,6 +12,7 @@ class BookController extends Controller
 {
     public function index()
     {
+        // Get user's wishlist for checking if books are already wishlisted
         $userWishlist = [];
         if (Auth::check()) {
             $userWishlist = Wishlist::where('user_id', Auth::id())
@@ -19,6 +20,7 @@ class BookController extends Controller
                                   ->toArray();
         }
         
+        // Prepare multiple themed sections for homepage
         $sections = [
             // Buku Terbaru (Recent Books)
             'recent' => [
