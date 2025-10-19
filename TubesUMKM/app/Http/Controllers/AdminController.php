@@ -20,7 +20,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Books - Index
+     * Manajemen buku: indeks
      */
     public function booksIndex()
     {
@@ -32,7 +32,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Books - Create Form
+     * Manajemen buku: buat form
      */
     public function booksCreate()
     {
@@ -41,7 +41,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Books - Store
+     * Manajemen buku: store
      */
     public function booksStore(Request $request)
     {
@@ -60,18 +60,17 @@ class AdminController extends Controller
             'cover_upload' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        // Handle cover image: priority to file upload, then URL
+        // Handle cover image: prioritaskan file upload, baru URL
         if ($request->hasFile('cover_upload')) {
             $path = $request->file('cover_upload')->store('book-covers', 'public');
             $validated['cover_image'] = $path;
         } elseif (empty($validated['cover_image'])) {
-            // Default placeholder if no cover provided
+            // Default jika tidak ada cover
             $validated['cover_image'] = 'https://via.placeholder.com/200x300?text=No+Cover';
         }
 
         $validated['is_active'] = $request->boolean('is_active', true);
         
-        // Remove cover_upload from validated data
         unset($validated['cover_upload']);
 
         Book::create($validated);
@@ -81,7 +80,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Books - Edit Form
+     * Manajemen buku: form edit
      */
     public function booksEdit(Book $book)
     {
@@ -90,7 +89,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Books - Update
+     * Manajemen buku: update
      */
     public function booksUpdate(Request $request, Book $book)
     {
@@ -109,9 +108,9 @@ class AdminController extends Controller
             'cover_upload' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        // Handle cover image upload
+        // Handle upload cover image
         if ($request->hasFile('cover_upload')) {
-            // Delete old image if it's a local file
+            // Delete old image jika file lokal
             if ($book->cover_image && !filter_var($book->cover_image, FILTER_VALIDATE_URL)) {
                 Storage::disk('public')->delete($book->cover_image);
             }
@@ -121,7 +120,6 @@ class AdminController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active', true);
         
-        // Remove cover_upload from validated data
         unset($validated['cover_upload']);
 
         $book->update($validated);
@@ -131,11 +129,11 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Books - Delete
+     * Manajemen buku: delete
      */
     public function booksDestroy(Book $book)
     {
-        // Delete cover image if exists
+        // Delete cover image jika ada
         if ($book->cover_image) {
             Storage::disk('public')->delete($book->cover_image);
         }
@@ -147,18 +145,18 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Orders - Index
+     * Manajemen order: indeks
      */
     public function ordersIndex(Request $request)
     {
         $query = Order::with(['user', 'orderItems.book']);
 
-        // Filter by status
+        // Filter berdasarkan status
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
 
-        // Search by order number or customer name
+        // Search berdasarkan order number atau customer name
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -177,7 +175,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Orders - Show Detail
+     * Manajemen order: show detail
      */
     public function ordersShow(Order $order)
     {
@@ -186,11 +184,10 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Orders - Update Status
+     * Manajemen order: update status
      */
     public function ordersUpdateStatus(Request $request, Order $order)
     {
-        // Build allowed status list from Order model to keep in sync with DB
         $allowed = implode(',', array_keys(Order::getStatuses()));
 
         $validated = $request->validate([
@@ -200,30 +197,30 @@ class AdminController extends Controller
         $newStatus = $validated['status'];
         $currentStatus = $order->status;
 
-        // Define status hierarchy (order level)
+        // Hirarki status (order level)
         $statusHierarchy = [
             'pending' => 1,
             'diproses' => 2,
             'dikirim' => 3,
             'selesai' => 4,
-            'batal' => 0, // special case, only user can set this
+            'batal' => 0, // special case, hanya bisa diset oleh user
         ];
 
-        // Validation: Status must be sequential (cannot go backward)
+        // Validasi: status harus sekuensial
         
-        // Case 1: Cannot change from 'selesai' or 'batal'
+        // Case 1: tidak bisa ganti dari 'selesai' atau 'batal'
         if (in_array($currentStatus, ['selesai', 'batal'])) {
             return redirect()->back()
                 ->with('error', "Pesanan dengan status '{$order->status_label}' tidak dapat diubah lagi.");
         }
 
-        // Case 2: Admin cannot set status to 'batal' - only user can cancel
+        // Case 2: admin tidak bisa set status ke 'batal' - hanya user yang bisa cancel
         if ($newStatus === 'batal') {
             return redirect()->back()
                 ->with('error', "Hanya pelanggan yang dapat membatalkan pesanan. Admin hanya dapat memproses pesanan ke depan.");
         }
 
-        // Case 3: Cannot go backward (e.g., dikirim -> diproses)
+        // Case 3: tidak boleh mundur (contoh: dikirim -> diproses)
         if ($statusHierarchy[$newStatus] <= $statusHierarchy[$currentStatus]) {
             return redirect()->back()
                 ->with('error', "Status pesanan tidak dapat mundur. Status saat ini: '{$order->status_label}'.");
@@ -236,7 +233,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Categories - Index
+     * Manajemen kategori: indeks
      */
     public function categoriesIndex()
     {
@@ -245,7 +242,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Categories - Store
+     * Manajemen kategori: store
      */
     public function categoriesStore(Request $request)
     {
@@ -260,7 +257,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Categories - Update
+     * Manajemen kategori: update
      */
     public function categoriesUpdate(Request $request, Category $category)
     {
@@ -275,11 +272,11 @@ class AdminController extends Controller
     }
 
     /**
-     * Manage Categories - Delete
+     * Manajemen kategori: delete
      */
     public function categoriesDestroy(Category $category)
     {
-        // Check if category has books
+        // Cek jika ada buku di kategori ini
         if ($category->books()->count() > 0) {
             return redirect()->route('admin.categories.index')
                 ->with('error', 'Kategori tidak bisa dihapus karena masih memiliki buku!');
